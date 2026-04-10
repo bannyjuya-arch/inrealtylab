@@ -78,6 +78,10 @@
         min-height: 74px;
       }
 
+      .brand {
+        min-width: 0;
+      }
+
       .brand-name {
         font-size: 20px;
         font-weight: 800;
@@ -127,6 +131,10 @@
         background: var(--white);
         color: var(--text);
         border-color: var(--line);
+      }
+
+      .header-cta {
+        white-space: nowrap;
       }
 
       .hero {
@@ -529,18 +537,107 @@
           width: min(100% - 28px, 1120px);
         }
 
+        .section {
+          padding: 56px 0;
+        }
+
         .header-inner {
-          min-height: 68px;
+          min-height: 64px;
+          gap: 12px;
+        }
+
+        .brand-name {
+          font-size: 18px;
+        }
+
+        .brand-sub {
+          font-size: 11px;
+          line-height: 1.4;
+        }
+
+        .header-cta {
+          padding: 11px 14px;
+          font-size: 12px;
+          border-radius: 14px;
+        }
+
+        .eyebrow {
+          font-size: 12px;
+          padding: 7px 11px;
+        }
+
+        .hero h1 {
+          margin-top: 14px;
+          font-size: 34px;
+          line-height: 1.18;
         }
 
         .hero p,
         .section-head p {
-          font-size: 16px;
+          font-size: 15px;
           line-height: 1.75;
+        }
+
+        .hero-actions {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .hero-actions .btn,
+        .form-grid .btn {
+          width: 100%;
+        }
+
+        .showcase,
+        .content-card,
+        .dark-card,
+        .step-card,
+        .form-card {
+          padding: 20px;
+        }
+
+        .showcase-top {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .metric-box,
+        .feature-box,
+        .feature-panel {
+          padding: 16px;
+        }
+
+        .metric-value {
+          font-size: 24px;
+        }
+
+        .section-head {
+          margin-bottom: 24px;
+        }
+
+        .section-head h2 {
+          font-size: 28px;
+          line-height: 1.25;
+        }
+
+        .content-card h3,
+        .step-title {
+          font-size: 20px;
+        }
+
+        .card {
+          border-radius: 18px;
+        }
+
+        input,
+        textarea {
+          padding: 13px 14px;
+          border-radius: 14px;
         }
 
         .footer-inner {
           flex-direction: column;
+          padding: 22px 0 28px;
         }
       }
     </style>
@@ -548,7 +645,7 @@
   <body>
     <header class="header">
       <div class="container header-inner">
-        <div>
+        <div class="brand">
           <div class="brand-name">INREALTY</div>
           <div class="brand-sub">AI-Powered PPP Development Intelligence</div>
         </div>
@@ -558,7 +655,7 @@
           <a href="#traction">성장성</a>
           <a href="#contact">문의</a>
         </nav>
-        <a class="btn btn-dark" href="#contact">IR 자료 요청</a>
+        <a class="btn btn-dark header-cta" href="#contact">IR 자료 요청</a>
       </div>
     </header>
 
@@ -614,7 +711,7 @@
               </div>
               <div class="metric-box blue">
                 <div class="metric-label">사업 구조 추천</div>
-                <div class="metric-value" style="font-size:24px;">PPP 자동 제안</div>
+                <div class="metric-value" style="font-size: 24px;">PPP 자동 제안</div>
                 <div class="metric-desc">공공성과 사업성을 동시에 고려한 최적안 도출</div>
               </div>
               <div class="feature-panel">
@@ -681,23 +778,26 @@
       </section>
 
       <section id="traction" class="section">
-        <div class="container dark-grid">
-          <div>
-            <div class="section-kicker">Traction & Credibility</div>
-            <div class="section-head" style="margin-bottom:0;">
-              <h2>현장 경험과 초기 시장 검증을 바탕으로 플랫폼 확장성을 증명하고 있습니다</h2>
-              <p>대표자의 22년 이상 실무 경험을 기반으로 공공개발 및 PPP 사업의 구조적 문제를 정의했고, 실제 업무 환경에서 요구되는 기능을 반영한 플랫폼 설계를 축적해왔습니다.</p>
+        <div class="container">
+          <div class="dark-grid">
+            <div>
+              <div class="section-kicker">Traction &amp; Credibility</div>
+              <div class="section-head" style="margin-bottom: 0;">
+                <h2>현장 경험과 초기 시장 검증을 바탕으로 플랫폼 확장성을 증명하고 있습니다</h2>
+                <p>대표자의 22년 이상 실무 경험을 기반으로 공공개발 및 PPP 사업의 구조적 문제를 정의했고, 실제 업무 환경에서 요구되는 기능을 반영한 플랫폼 설계를 축적해왔습니다.</p>
+                <p>공공기관 및 민간과의 협업 경험, 파일럿 프로젝트 수행, 초기 매출 발생은 시장의 실질적 수요를 보여주는 신뢰 지표입니다. 이는 기술성뿐 아니라 사업성 측면에서도 중요한 검증 요소입니다.</p>
+              </div>
             </div>
+            <aside class="dark-card" style="background: #0f172a; color: #fff; border: none; box-shadow: var(--shadow);">
+              <div class="label">Investment Highlights</div>
+              <ul class="proof-list">
+                <li>22년+ 도메인 전문성 기반 문제 정의 및 설계</li>
+                <li>공공기관·민간 개발사 대상 초기 레퍼런스 확보</li>
+                <li>파일럿 프로젝트 수행 및 초기 매출 성장 경험</li>
+                <li>컨설팅형 서비스에서 SaaS형 플랫폼으로 확장 가능</li>
+              </ul>
+            </aside>
           </div>
-          <aside class="dark-card" style="background:#0f172a; color:#fff; border:none; box-shadow: var(--shadow);">
-            <div class="label">Investment Highlights</div>
-            <ul class="proof-list">
-              <li>22년+ 도메인 전문성 기반 문제 정의 및 설계</li>
-              <li>공공기관·민간 개발사 대상 초기 레퍼런스 확보</li>
-              <li>파일럿 프로젝트 수행 및 초기 매출 성장 경험</li>
-              <li>컨설팅형 서비스에서 SaaS형 플랫폼으로 확장 가능</li>
-            </ul>
-          </aside>
         </div>
       </section>
 
@@ -706,12 +806,12 @@
           <div class="dark-grid">
             <div>
               <div class="section-kicker">Growth Strategy</div>
-              <div class="section-head" style="margin-bottom:0; max-width:680px;">
+              <div class="section-head" style="margin-bottom: 0; max-width: 680px;">
                 <h2>초기 레퍼런스 확보에서 전국 단위 SaaS 확장까지</h2>
                 <p>인리얼티는 공공기관 중심 초기 시장 진입 이후 민간 개발사와 컨설팅 시장으로 확장하고, 궁극적으로는 반복 가능한 플랫폼 매출 구조를 구축하는 것을 목표로 합니다.</p>
               </div>
             </div>
-            <div class="grid-3" style="grid-template-columns:1fr 1fr; gap:16px;">
+            <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 16px;">
               <div class="dark-card">
                 <div class="label">Phase 1</div>
                 <h3>공공기관 레퍼런스 확대</h3>
@@ -722,7 +822,7 @@
                 <h3>민간 개발사 고객 확장</h3>
                 <p>사업성 검토 수요가 높은 민간 시장으로 고객군을 확장합니다.</p>
               </div>
-              <div class="dark-card" style="grid-column:1 / -1;">
+              <div class="dark-card" style="grid-column: 1 / -1;">
                 <div class="label">Phase 3</div>
                 <h3>구독형 SaaS 전환 및 고수익 구조 확보</h3>
                 <p>프로젝트형 수익을 넘어 반복 매출 기반의 확장 가능한 플랫폼 기업으로 전환합니다.</p>
@@ -763,17 +863,17 @@
         </div>
       </section>
 
-      <section id="contact" class="section section-soft" style="border-top:1px solid var(--line);">
+      <section id="contact" class="section section-soft" style="border-top: 1px solid var(--line);">
         <div class="container contact-grid">
           <div>
             <div class="section-kicker">Contact</div>
-            <div class="section-head" style="margin-bottom:0;">
+            <div class="section-head" style="margin-bottom: 0;">
               <h2>벤처인증, 투자유치, 전략 제휴 논의를 시작해보세요</h2>
               <p>기술성, 시장성, 확장성을 모두 갖춘 공공개발 인텔리전스 플랫폼으로서 인리얼티의 성장 가능성을 소개합니다.</p>
             </div>
           </div>
           <div class="card form-card">
-            <h3 style="font-size:28px; letter-spacing:-0.03em;">문의 남기기</h3>
+            <h3 style="font-size: 28px; letter-spacing: -0.03em;">문의 남기기</h3>
             <p>투자자, 심사기관, 파트너사를 위한 소개 자료와 데모를 제공해드립니다.</p>
             <form class="form-grid" onsubmit="event.preventDefault(); alert('문의 폼 예시입니다. GitHub Pages 공개 후 구글폼이나 이메일 연동을 붙이면 됩니다.');">
               <input type="text" placeholder="회사명 / 기관명" />
@@ -790,7 +890,7 @@
     <footer class="footer">
       <div class="container footer-inner">
         <div>
-          <div style="font-weight:800; color:#0f172a;">INREALTY</div>
+          <div style="font-weight: 800; color: #0f172a;">INREALTY</div>
           <div>AI 기반 공공개발 의사결정 플랫폼</div>
         </div>
         <div>© 2026 INREALTY. All rights reserved.</div>

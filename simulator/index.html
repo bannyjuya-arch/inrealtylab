@@ -1,0 +1,342 @@
+import React, { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { Search, MapPin, Calculator, TrendingUp, AlertTriangle, Save, Download, Building2, LineChart as LineChartIcon, SlidersHorizontal, BarChart3, Landmark } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+const krw = (v:number) => new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 }).format(v || 0);
+const pct = (v:number) => `${(v * 100).toFixed(1)}%`;
+const num = (v:number) => new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format(v || 0);
+
+const mockSite = {
+  name: "행당중학교 부지",
+  address: "서울특별시 성동구 행당동 000-0",
+  zoning: "제2종 일반주거지역",
+  officialLandPrice: 18500000,
+  agingScore: 71,
+  studentTrend: -0.08,
+  landArea: 2400,
+  grossFloorArea: 4200,
+};
+
+function buildRows(inputs:any) {
+  const totalConstruction = inputs.gfa * inputs.costPerPyeong;
+  const totalCost = totalConstruction * 1.2;
+  const debt = totalCost * 0.65;
+  const annualDebt = debt * 0.085;
+  const rows = [];
+  let minDscr = 999;
+  for (let year = 1; year <= inputs.years; year++) {
+    const revenue = inputs.seats * inputs.occupancy * inputs.pricePerSeat * inputs.eventsPerMonth * 12 * Math.pow(1.01, year - 1);
+    const opex = revenue * 0.28;
+    const maintenance = totalConstruction * 0.015;
+    const debtService = year <= 20 ? annualDebt : 0;
+    const ebitda = revenue - opex - maintenance;
+    const ncf = ebitda - debtService;
+    const dscr = debtService > 0 ? ebitda / debtService : 1.8;
+    minDscr = Math.min(minDscr, dscr);
+    rows.push({ year, revenue, opex, maintenance, debtService, ncf, dscr });
+  }
+  const irr = 0.064 + ((inputs.occupancy - 0.8) * 0.08) + ((inputs.years - 30) * 0.0015) - ((inputs.rate - 0.045) * 0.6);
+  const monthlyRent = totalCost * (inputs.targetIrr + 0.02) / 12 / 20;
+  return { rows, totalConstruction, totalCost, minDscr, irr, monthlyRent };
+}
+
+export default function InrealtySimulatorScreenV1() {
+  const [query, setQuery] = useState("행당중학교");
+  const [inputs, setInputs] = useState({
+    gfa: mockSite.grossFloorArea,
+    costPerPyeong: 12000000,
+    targetIrr: 0.07,
+    years: 30,
+    rate: 0.045,
+    seats: 850,
+    occupancy: 0.85,
+    pricePerSeat: 28000,
+    eventsPerMonth: 18,
+  });
+
+  const result = useMemo(() => buildRows(inputs), [inputs]);
+
+  const sensitivity = [
+    { case: "기준안", irr: result.irr, dscr: result.minDscr },
+    { case: "금리 +1%", irr: result.irr - 0.008, dscr: result.minDscr - 0.06 },
+    { case: "공사비 +5%", irr: result.irr - 0.004, dscr: result.minDscr - 0.03 },
+    { case: "가동률 -10%", irr: result.irr - 0.011, dscr: result.minDscr - 0.12 },
+  ];
+
+  const compare = [
+    { name: "정부안", irr: 0.052, sroi: 1.15, publicValue: 72 },
+    { name: "인리얼티 제안안", irr: result.irr, sroi: 1.42, publicValue: 88 },
+  ];
+
+  const setField = (key:string, value:number) => setInputs((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-7xl p-6 md:p-8">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-[28px] border bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="mb-2 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">INREALTY PPP BOT Simulator</div>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">BOT 수익성 시뮬레이터</h1>
+              <p className="mt-2 text-sm text-slate-600">주소 입력부터 사업성 분석, 현금흐름, 협상용 리포트까지 한 화면에서 확인합니다.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="rounded-2xl"><Save className="mr-2 h-4 w-4" />시나리오 저장</Button>
+              <Button className="rounded-2xl"><Download className="mr-2 h-4 w-4" />PDF 내보내기</Button>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <div className="space-y-6">
+            <Card className="rounded-[28px] shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Search className="h-5 w-5" />부지 검색</CardTitle>
+                <CardDescription>학교명 또는 주소를 입력하면 관련 정보를 자동 조회합니다.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="예: 행당중학교" className="rounded-2xl" />
+                  <Button className="rounded-2xl">조회</Button>
+                </div>
+                <div className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-700">
+                  <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900"><MapPin className="h-4 w-4" />{mockSite.name}</div>
+                  <div>{mockSite.address}</div>
+                  <div className="mt-3 grid gap-1">
+                    <div>용도지역: {mockSite.zoning}</div>
+                    <div>공시지가: {krw(mockSite.officialLandPrice)} / 평</div>
+                    <div>시설 노후도: {mockSite.agingScore}</div>
+                    <div>학생 수 추이: {pct(mockSite.studentTrend)}</div>
+                    <div>연면적 가정: {num(mockSite.grossFloorArea)}평</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[28px] shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><SlidersHorizontal className="h-5 w-5" />입력 변수</CardTitle>
+                <CardDescription>핵심 변수만 조정해도 바로 결과가 반영됩니다.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-2">
+                  <Label>평당 공사비 · {krw(inputs.costPerPyeong)}</Label>
+                  <Slider value={[inputs.costPerPyeong]} min={8000000} max={18000000} step={100000} onValueChange={(v) => setField("costPerPyeong", v[0])} />
+                </div>
+                <div className="space-y-2">
+                  <Label>목표 수익률 · {pct(inputs.targetIrr)}</Label>
+                  <Slider value={[inputs.targetIrr]} min={0.06} max={0.08} step={0.001} onValueChange={(v) => setField("targetIrr", v[0])} />
+                </div>
+                <div className="space-y-2">
+                  <Label>운영 기간 · {inputs.years}년</Label>
+                  <Slider value={[inputs.years]} min={30} max={40} step={1} onValueChange={(v) => setField("years", v[0])} />
+                </div>
+                <div className="space-y-2">
+                  <Label>금리 · {pct(inputs.rate)}</Label>
+                  <Slider value={[inputs.rate]} min={0.02} max={0.09} step={0.001} onValueChange={(v) => setField("rate", v[0])} />
+                </div>
+                <Separator />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>좌석 수</Label>
+                    <Input type="number" value={inputs.seats} onChange={(e) => setField("seats", Number(e.target.value))} className="rounded-2xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>월 운영 횟수</Label>
+                    <Input type="number" value={inputs.eventsPerMonth} onChange={(e) => setField("eventsPerMonth", Number(e.target.value))} className="rounded-2xl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>좌석당 단가</Label>
+                    <Input type="number" value={inputs.pricePerSeat} onChange={(e) => setField("pricePerSeat", Number(e.target.value))} className="rounded-2xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>가동률</Label>
+                    <Input type="number" value={inputs.occupancy} onChange={(e) => setField("occupancy", Number(e.target.value))} className="rounded-2xl" />
+                  </div>
+                </div>
+                <Button className="w-full rounded-2xl"><Calculator className="mr-2 h-4 w-4" />분석 실행</Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">사업 IRR</div><div className="mt-2 text-2xl font-semibold">{pct(result.irr)}</div><div className="mt-2 text-xs text-slate-500">목표 {pct(inputs.targetIrr)}</div></CardContent></Card>
+              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">최저 DSCR</div><div className="mt-2 text-2xl font-semibold">{num(result.minDscr)}</div><div className="mt-2 text-xs text-slate-500">기준 1.20 이상</div></CardContent></Card>
+              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">총사업비</div><div className="mt-2 text-xl font-semibold">{krw(result.totalCost)}</div><div className="mt-2 text-xs text-slate-500">부대비 포함</div></CardContent></Card>
+              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">적정 월 임대료</div><div className="mt-2 text-xl font-semibold">{krw(result.monthlyRent)}</div><div className="mt-2 text-xs text-slate-500">목표 IRR 역산</div></CardContent></Card>
+            </div>
+
+            {result.minDscr < 1.2 ? (
+              <div className="flex items-start gap-3 rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                <AlertTriangle className="mt-0.5 h-5 w-5" />
+                <div>
+                  <div className="font-semibold">DSCR 경고</div>
+                  <div className="text-sm">현재 구조에서는 DSCR이 1.2 미만입니다. 운영기간 연장 또는 임대료 조정이 필요합니다.</div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 rounded-[24px] border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                <TrendingUp className="mt-0.5 h-5 w-5" />
+                <div>
+                  <div className="font-semibold">재무 안정성 충족</div>
+                  <div className="text-sm">현재 가정에서는 DSCR 1.2 이상 기준을 대체로 충족합니다.</div>
+                </div>
+              </div>
+            )}
+
+            <Tabs defaultValue="cashflow" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 rounded-2xl">
+                <TabsTrigger value="cashflow">현금흐름</TabsTrigger>
+                <TabsTrigger value="sensitivity">민감도</TabsTrigger>
+                <TabsTrigger value="compare">비교 뷰</TabsTrigger>
+                <TabsTrigger value="summary">요약 리포트</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="cashflow" className="mt-4">
+                <Card className="rounded-[28px] shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><LineChartIcon className="h-5 w-5" />40년 Cash Flow</CardTitle>
+                    <CardDescription>연도별 수익·지출·원리금 상환과 순현금흐름을 함께 봅니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[360px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={result.rows}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="year" />
+                          <YAxis tickFormatter={(v) => `${Math.round(v / 100000000)}억`} />
+                          <Tooltip formatter={(value:any) => krw(Number(value))} />
+                          <Legend />
+                          <Area type="monotone" dataKey="revenue" name="수익" fillOpacity={0.18} />
+                          <Area type="monotone" dataKey="opex" name="운영비" fillOpacity={0.18} />
+                          <Area type="monotone" dataKey="debtService" name="원리금 상환" fillOpacity={0.18} />
+                          <Line type="monotone" dataKey="ncf" name="순현금흐름" dot={false} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="sensitivity" className="mt-4">
+                <Card className="rounded-[28px] shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" />민감도 분석</CardTitle>
+                    <CardDescription>금리, 공사비, 가동률 변화에 따라 수익성이 어떻게 변하는지 확인합니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={sensitivity}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="case" />
+                          <YAxis yAxisId="left" tickFormatter={(v) => `${Math.round(v * 100)}%`} />
+                          <YAxis yAxisId="right" orientation="right" />
+                          <Tooltip formatter={(v:any, n:any) => n === "irr" ? pct(Number(v)) : num(Number(v))} />
+                          <Legend />
+                          <Line yAxisId="left" type="monotone" dataKey="irr" name="IRR" />
+                          <Line yAxisId="right" type="monotone" dataKey="dscr" name="Min DSCR" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>시나리오</TableHead>
+                          <TableHead>IRR</TableHead>
+                          <TableHead>Min DSCR</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sensitivity.map((row) => (
+                          <TableRow key={row.case}>
+                            <TableCell>{row.case}</TableCell>
+                            <TableCell>{pct(row.irr)}</TableCell>
+                            <TableCell>{num(row.dscr)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="compare" className="mt-4">
+                <Card className="rounded-[28px] shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Landmark className="h-5 w-5" />정부안 vs 인리얼티 제안안</CardTitle>
+                    <CardDescription>재무성과와 공공성 지표를 동시에 비교합니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[320px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={compare}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip formatter={(v:any, n:any) => n === "irr" ? pct(Number(v)) : num(Number(v))} />
+                          <Legend />
+                          <Bar dataKey="irr" name="IRR" />
+                          <Bar dataKey="sroi" name="SROI" />
+                          <Bar dataKey="publicValue" name="공공성 점수" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Badge className="rounded-xl">정부안 IRR 5.2%</Badge>
+                      <Badge variant="secondary" className="rounded-xl">제안안 SROI 1.42</Badge>
+                      <Badge variant="secondary" className="rounded-xl">공공성 88점</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="summary" className="mt-4">
+                <Card className="rounded-[28px] shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" />사업 타당성 요약 리포트</CardTitle>
+                    <CardDescription>교육청 협상용 요약 포맷을 미리 보여주는 화면입니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="rounded-2xl bg-slate-50 p-4">
+                        <div className="mb-2 text-sm font-semibold text-slate-500">대상 부지</div>
+                        <div className="font-semibold text-slate-900">{mockSite.name}</div>
+                        <div className="text-sm text-slate-600">{mockSite.address}</div>
+                      </div>
+                      <div className="rounded-2xl bg-slate-50 p-4">
+                        <div className="mb-2 text-sm font-semibold text-slate-500">핵심 결과</div>
+                        <div className="text-sm text-slate-700">IRR {pct(result.irr)} / Min DSCR {num(result.minDscr)} / 월 임대료 {krw(result.monthlyRent)}</div>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border p-4 text-sm text-slate-700">
+                      <p className="m-0">현재 시나리오는 학교복합시설법 적용을 전제로 토지사용료를 0으로 가정했습니다. 목표 수익률은 {pct(inputs.targetIrr)}이며, 운영기간은 {inputs.years}년 기준입니다.</p>
+                      <p className="mt-3 mb-0">협상 포인트: 운영기간 조정, 임대료 역산 결과, 공공성 강화 항목, 정부안 대비 SROI 우위 근거를 함께 제시할 수 있습니다.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button className="rounded-2xl"><Download className="mr-2 h-4 w-4" />PDF 리포트 생성</Button>
+                      <Button variant="outline" className="rounded-2xl"><Save className="mr-2 h-4 w-4" />프로젝트 저장</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

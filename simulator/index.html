@@ -1,342 +1,883 @@
-import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Search, MapPin, Calculator, TrendingUp, AlertTriangle, Save, Download, Building2, LineChart as LineChartIcon, SlidersHorizontal, BarChart3, Landmark } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INREALTY | BOT 수익성 시뮬레이터</title>
+  <meta
+    name="description"
+    content="학교 부지 기반 PPP/BOT 사업성 분석용 임시 시뮬레이터 화면"
+  />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #e2e8f0;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --warn-bg: #fff7ed;
+      --warn-line: #fdba74;
+      --warn-text: #9a3412;
+      --ok-bg: #ecfdf5;
+      --ok-line: #86efac;
+      --ok-text: #166534;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 24px;
+      --max: 1240px;
+    }
 
-const krw = (v:number) => new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW", maximumFractionDigits: 0 }).format(v || 0);
-const pct = (v:number) => `${(v * 100).toFixed(1)}%`;
-const num = (v:number) => new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format(v || 0);
+    * {
+      box-sizing: border-box;
+    }
 
-const mockSite = {
-  name: "행당중학교 부지",
-  address: "서울특별시 성동구 행당동 000-0",
-  zoning: "제2종 일반주거지역",
-  officialLandPrice: 18500000,
-  agingScore: 71,
-  studentTrend: -0.08,
-  landArea: 2400,
-  grossFloorArea: 4200,
-};
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+        "Noto Sans KR", sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
 
-function buildRows(inputs:any) {
-  const totalConstruction = inputs.gfa * inputs.costPerPyeong;
-  const totalCost = totalConstruction * 1.2;
-  const debt = totalCost * 0.65;
-  const annualDebt = debt * 0.085;
-  const rows = [];
-  let minDscr = 999;
-  for (let year = 1; year <= inputs.years; year++) {
-    const revenue = inputs.seats * inputs.occupancy * inputs.pricePerSeat * inputs.eventsPerMonth * 12 * Math.pow(1.01, year - 1);
-    const opex = revenue * 0.28;
-    const maintenance = totalConstruction * 0.015;
-    const debtService = year <= 20 ? annualDebt : 0;
-    const ebitda = revenue - opex - maintenance;
-    const ncf = ebitda - debtService;
-    const dscr = debtService > 0 ? ebitda / debtService : 1.8;
-    minDscr = Math.min(minDscr, dscr);
-    rows.push({ year, revenue, opex, maintenance, debtService, ncf, dscr });
-  }
-  const irr = 0.064 + ((inputs.occupancy - 0.8) * 0.08) + ((inputs.years - 30) * 0.0015) - ((inputs.rate - 0.045) * 0.6);
-  const monthlyRent = totalCost * (inputs.targetIrr + 0.02) / 12 / 20;
-  return { rows, totalConstruction, totalCost, minDscr, irr, monthlyRent };
-}
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-export default function InrealtySimulatorScreenV1() {
-  const [query, setQuery] = useState("행당중학교");
-  const [inputs, setInputs] = useState({
-    gfa: mockSite.grossFloorArea,
-    costPerPyeong: 12000000,
-    targetIrr: 0.07,
-    years: 30,
-    rate: 0.045,
-    seats: 850,
-    occupancy: 0.85,
-    pricePerSeat: 28000,
-    eventsPerMonth: 18,
-  });
+    .container {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+    }
 
-  const result = useMemo(() => buildRows(inputs), [inputs]);
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.86);
+      border-bottom: 1px solid var(--line);
+    }
 
-  const sensitivity = [
-    { case: "기준안", irr: result.irr, dscr: result.minDscr },
-    { case: "금리 +1%", irr: result.irr - 0.008, dscr: result.minDscr - 0.06 },
-    { case: "공사비 +5%", irr: result.irr - 0.004, dscr: result.minDscr - 0.03 },
-    { case: "가동률 -10%", irr: result.irr - 0.011, dscr: result.minDscr - 0.12 },
-  ];
+    .topbar-inner {
+      min-height: 72px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
 
-  const compare = [
-    { name: "정부안", irr: 0.052, sroi: 1.15, publicValue: 72 },
-    { name: "인리얼티 제안안", irr: result.irr, sroi: 1.42, publicValue: 88 },
-  ];
+    .brand {
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
 
-  const setField = (key:string, value:number) => setInputs((prev) => ({ ...prev, [key]: value }));
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl p-6 md:p-8">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-[28px] border bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="mb-2 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">INREALTY PPP BOT Simulator</div>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">BOT 수익성 시뮬레이터</h1>
-              <p className="mt-2 text-sm text-slate-600">주소 입력부터 사업성 분석, 현금흐름, 협상용 리포트까지 한 화면에서 확인합니다.</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="rounded-2xl"><Save className="mr-2 h-4 w-4" />시나리오 저장</Button>
-              <Button className="rounded-2xl"><Download className="mr-2 h-4 w-4" />PDF 내보내기</Button>
-            </div>
-          </div>
-        </motion.div>
+    .btn {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
 
-        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="space-y-6">
-            <Card className="rounded-[28px] shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Search className="h-5 w-5" />부지 검색</CardTitle>
-                <CardDescription>학교명 또는 주소를 입력하면 관련 정보를 자동 조회합니다.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="예: 행당중학교" className="rounded-2xl" />
-                  <Button className="rounded-2xl">조회</Button>
-                </div>
-                <div className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-700">
-                  <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900"><MapPin className="h-4 w-4" />{mockSite.name}</div>
-                  <div>{mockSite.address}</div>
-                  <div className="mt-3 grid gap-1">
-                    <div>용도지역: {mockSite.zoning}</div>
-                    <div>공시지가: {krw(mockSite.officialLandPrice)} / 평</div>
-                    <div>시설 노후도: {mockSite.agingScore}</div>
-                    <div>학생 수 추이: {pct(mockSite.studentTrend)}</div>
-                    <div>연면적 가정: {num(mockSite.grossFloorArea)}평</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
 
-            <Card className="rounded-[28px] shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><SlidersHorizontal className="h-5 w-5" />입력 변수</CardTitle>
-                <CardDescription>핵심 변수만 조정해도 바로 결과가 반영됩니다.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-2">
-                  <Label>평당 공사비 · {krw(inputs.costPerPyeong)}</Label>
-                  <Slider value={[inputs.costPerPyeong]} min={8000000} max={18000000} step={100000} onValueChange={(v) => setField("costPerPyeong", v[0])} />
-                </div>
-                <div className="space-y-2">
-                  <Label>목표 수익률 · {pct(inputs.targetIrr)}</Label>
-                  <Slider value={[inputs.targetIrr]} min={0.06} max={0.08} step={0.001} onValueChange={(v) => setField("targetIrr", v[0])} />
-                </div>
-                <div className="space-y-2">
-                  <Label>운영 기간 · {inputs.years}년</Label>
-                  <Slider value={[inputs.years]} min={30} max={40} step={1} onValueChange={(v) => setField("years", v[0])} />
-                </div>
-                <div className="space-y-2">
-                  <Label>금리 · {pct(inputs.rate)}</Label>
-                  <Slider value={[inputs.rate]} min={0.02} max={0.09} step={0.001} onValueChange={(v) => setField("rate", v[0])} />
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label>좌석 수</Label>
-                    <Input type="number" value={inputs.seats} onChange={(e) => setField("seats", Number(e.target.value))} className="rounded-2xl" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>월 운영 횟수</Label>
-                    <Input type="number" value={inputs.eventsPerMonth} onChange={(e) => setField("eventsPerMonth", Number(e.target.value))} className="rounded-2xl" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label>좌석당 단가</Label>
-                    <Input type="number" value={inputs.pricePerSeat} onChange={(e) => setField("pricePerSeat", Number(e.target.value))} className="rounded-2xl" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>가동률</Label>
-                    <Input type="number" value={inputs.occupancy} onChange={(e) => setField("occupancy", Number(e.target.value))} className="rounded-2xl" />
-                  </div>
-                </div>
-                <Button className="w-full rounded-2xl"><Calculator className="mr-2 h-4 w-4" />분석 실행</Button>
-              </CardContent>
-            </Card>
-          </div>
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
 
-          <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">사업 IRR</div><div className="mt-2 text-2xl font-semibold">{pct(result.irr)}</div><div className="mt-2 text-xs text-slate-500">목표 {pct(inputs.targetIrr)}</div></CardContent></Card>
-              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">최저 DSCR</div><div className="mt-2 text-2xl font-semibold">{num(result.minDscr)}</div><div className="mt-2 text-xs text-slate-500">기준 1.20 이상</div></CardContent></Card>
-              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">총사업비</div><div className="mt-2 text-xl font-semibold">{krw(result.totalCost)}</div><div className="mt-2 text-xs text-slate-500">부대비 포함</div></CardContent></Card>
-              <Card className="rounded-[24px] shadow-sm"><CardContent className="p-5"><div className="text-sm text-slate-500">적정 월 임대료</div><div className="mt-2 text-xl font-semibold">{krw(result.monthlyRent)}</div><div className="mt-2 text-xs text-slate-500">목표 IRR 역산</div></CardContent></Card>
-            </div>
+    .page {
+      padding: 28px 0 56px;
+    }
 
-            {result.minDscr < 1.2 ? (
-              <div className="flex items-start gap-3 rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-amber-900">
-                <AlertTriangle className="mt-0.5 h-5 w-5" />
-                <div>
-                  <div className="font-semibold">DSCR 경고</div>
-                  <div className="text-sm">현재 구조에서는 DSCR이 1.2 미만입니다. 운영기간 연장 또는 임대료 조정이 필요합니다.</div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-start gap-3 rounded-[24px] border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-                <TrendingUp className="mt-0.5 h-5 w-5" />
-                <div>
-                  <div className="font-semibold">재무 안정성 충족</div>
-                  <div className="text-sm">현재 가정에서는 DSCR 1.2 이상 기준을 대체로 충족합니다.</div>
-                </div>
-              </div>
-            )}
+    .hero {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
 
-            <Tabs defaultValue="cashflow" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 rounded-2xl">
-                <TabsTrigger value="cashflow">현금흐름</TabsTrigger>
-                <TabsTrigger value="sensitivity">민감도</TabsTrigger>
-                <TabsTrigger value="compare">비교 뷰</TabsTrigger>
-                <TabsTrigger value="summary">요약 리포트</TabsTrigger>
-              </TabsList>
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
 
-              <TabsContent value="cashflow" className="mt-4">
-                <Card className="rounded-[28px] shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><LineChartIcon className="h-5 w-5" />40년 Cash Flow</CardTitle>
-                    <CardDescription>연도별 수익·지출·원리금 상환과 순현금흐름을 함께 봅니다.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[360px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={result.rows}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis tickFormatter={(v) => `${Math.round(v / 100000000)}억`} />
-                          <Tooltip formatter={(value:any) => krw(Number(value))} />
-                          <Legend />
-                          <Area type="monotone" dataKey="revenue" name="수익" fillOpacity={0.18} />
-                          <Area type="monotone" dataKey="opex" name="운영비" fillOpacity={0.18} />
-                          <Area type="monotone" dataKey="debtService" name="원리금 상환" fillOpacity={0.18} />
-                          <Line type="monotone" dataKey="ncf" name="순현금흐름" dot={false} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
 
-              <TabsContent value="sensitivity" className="mt-4">
-                <Card className="rounded-[28px] shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" />민감도 분석</CardTitle>
-                    <CardDescription>금리, 공사비, 가동률 변화에 따라 수익성이 어떻게 변하는지 확인합니다.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="h-[300px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={sensitivity}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="case" />
-                          <YAxis yAxisId="left" tickFormatter={(v) => `${Math.round(v * 100)}%`} />
-                          <YAxis yAxisId="right" orientation="right" />
-                          <Tooltip formatter={(v:any, n:any) => n === "irr" ? pct(Number(v)) : num(Number(v))} />
-                          <Legend />
-                          <Line yAxisId="left" type="monotone" dataKey="irr" name="IRR" />
-                          <Line yAxisId="right" type="monotone" dataKey="dscr" name="Min DSCR" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>시나리오</TableHead>
-                          <TableHead>IRR</TableHead>
-                          <TableHead>Min DSCR</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sensitivity.map((row) => (
-                          <TableRow key={row.case}>
-                            <TableCell>{row.case}</TableCell>
-                            <TableCell>{pct(row.irr)}</TableCell>
-                            <TableCell>{num(row.dscr)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 820px;
+    }
 
-              <TabsContent value="compare" className="mt-4">
-                <Card className="rounded-[28px] shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Landmark className="h-5 w-5" />정부안 vs 인리얼티 제안안</CardTitle>
-                    <CardDescription>재무성과와 공공성 지표를 동시에 비교합니다.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[320px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={compare}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip formatter={(v:any, n:any) => n === "irr" ? pct(Number(v)) : num(Number(v))} />
-                          <Legend />
-                          <Bar dataKey="irr" name="IRR" />
-                          <Bar dataKey="sroi" name="SROI" />
-                          <Bar dataKey="publicValue" name="공공성 점수" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Badge className="rounded-xl">정부안 IRR 5.2%</Badge>
-                      <Badge variant="secondary" className="rounded-xl">제안안 SROI 1.42</Badge>
-                      <Badge variant="secondary" className="rounded-xl">공공성 88점</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 20px;
+    }
 
-              <TabsContent value="summary" className="mt-4">
-                <Card className="rounded-[28px] shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" />사업 타당성 요약 리포트</CardTitle>
-                    <CardDescription>교육청 협상용 요약 포맷을 미리 보여주는 화면입니다.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <div className="mb-2 text-sm font-semibold text-slate-500">대상 부지</div>
-                        <div className="font-semibold text-slate-900">{mockSite.name}</div>
-                        <div className="text-sm text-slate-600">{mockSite.address}</div>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <div className="mb-2 text-sm font-semibold text-slate-500">핵심 결과</div>
-                        <div className="text-sm text-slate-700">IRR {pct(result.irr)} / Min DSCR {num(result.minDscr)} / 월 임대료 {krw(result.monthlyRent)}</div>
-                      </div>
-                    </div>
-                    <div className="rounded-2xl border p-4 text-sm text-slate-700">
-                      <p className="m-0">현재 시나리오는 학교복합시설법 적용을 전제로 토지사용료를 0으로 가정했습니다. 목표 수익률은 {pct(inputs.targetIrr)}이며, 운영기간은 {inputs.years}년 기준입니다.</p>
-                      <p className="mt-3 mb-0">협상 포인트: 운영기간 조정, 임대료 역산 결과, 공공성 강화 항목, 정부안 대비 SROI 우위 근거를 함께 제시할 수 있습니다.</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button className="rounded-2xl"><Download className="mr-2 h-4 w-4" />PDF 리포트 생성</Button>
-                      <Button variant="outline" className="rounded-2xl"><Save className="mr-2 h-4 w-4" />프로젝트 저장</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+    .panel,
+    .card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .panel h2,
+    .card h2,
+    .card h3 {
+      margin: 0 0 8px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .field small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .site-box {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .site-box strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .kpi-title {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .alert {
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border: 1px solid;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .alert.warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-line);
+      color: var(--warn-text);
+    }
+
+    .alert.ok {
+      background: var(--ok-bg);
+      border-color: var(--ok-line);
+      color: var(--ok-text);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: white;
+      padding: 10px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .card {
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .chart-box {
+      height: 340px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      background:
+        linear-gradient(to top, rgba(37,99,235,0.06), rgba(37,99,235,0.02)),
+        repeating-linear-gradient(
+          to right,
+          transparent,
+          transparent 54px,
+          rgba(148,163,184,0.12) 54px,
+          rgba(148,163,184,0.12) 55px
+        ),
+        repeating-linear-gradient(
+          to top,
+          transparent,
+          transparent 54px,
+          rgba(148,163,184,0.12) 54px,
+          rgba(148,163,184,0.12) 55px
+        );
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .report-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .report-mini {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .report-mini h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .kpis,
+      .grid-2,
+      .report-box {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 0;
+      }
+
+      .hero,
+      .panel,
+      .card {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="../">INREALTY</a>
+      <div class="top-actions">
+        <a class="btn" href="../">메인으로</a>
+        <button class="btn" type="button" onclick="saveScenario()">시나리오 저장</button>
+        <button class="btn btn-primary" type="button" onclick="window.print()">PDF 내보내기</button>
       </div>
     </div>
-  );
-}
+  </header>
+
+  <main class="page">
+    <div class="container">
+      <section class="hero">
+        <div class="badge">INREALTY PPP BOT Simulator</div>
+        <h1>BOT 수익성 시뮬레이터</h1>
+        <p>
+          학교 부지 주소 입력부터 공공성·사업성 비교, 현금흐름 검토, 협상용 요약 리포트까지
+          한 화면에서 확인하는 임시 시뮬레이터입니다.
+        </p>
+      </section>
+
+      <section class="layout">
+        <aside>
+          <div class="panel">
+            <h2>부지 검색</h2>
+            <div class="sub">학교명 또는 주소를 넣고 임시 시뮬레이션을 실행합니다.</div>
+
+            <div class="field">
+              <label for="query">학교명 또는 주소</label>
+              <input id="query" value="행당중학교" />
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;" type="button" onclick="lookupSite()">
+              부지 조회
+            </button>
+
+            <div class="site-box" id="siteBox">
+              <strong>행당중학교 부지</strong>
+              <div>서울특별시 성동구 행당동 000-0</div>
+              <div style="margin-top:10px;">용도지역: 제2종 일반주거지역</div>
+              <div>공시지가: 18,500,000원 / 평</div>
+              <div>시설 노후도: 71</div>
+              <div>학생 수 추이: -8.0%</div>
+              <div>연면적 가정: 4,200평</div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:16px;">
+            <h2>입력 변수</h2>
+            <div class="sub">핵심값만 바꾸면 결과를 바로 다시 계산합니다.</div>
+
+            <div class="field">
+              <label for="costPerPyeong">평당 공사비</label>
+              <input id="costPerPyeong" type="number" value="12000000" />
+              <small>기본값 1,200만 원</small>
+            </div>
+
+            <div class="field">
+              <label for="targetIRR">목표 수익률</label>
+              <select id="targetIRR">
+                <option value="0.06">6.0%</option>
+                <option value="0.07" selected>7.0%</option>
+                <option value="0.08">8.0%</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="operationYears">운영 기간</label>
+              <select id="operationYears">
+                <option value="30" selected>30년</option>
+                <option value="40">40년</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="interestRate">금리</label>
+              <input id="interestRate" type="number" step="0.001" value="0.045" />
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="seatCount">좌석 수</label>
+                <input id="seatCount" type="number" value="850" />
+              </div>
+              <div class="field">
+                <label for="eventsPerMonth">월 운영 횟수</label>
+                <input id="eventsPerMonth" type="number" value="18" />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="pricePerSeat">좌석당 단가</label>
+                <input id="pricePerSeat" type="number" value="28000" />
+              </div>
+              <div class="field">
+                <label for="occupancyRate">가동률</label>
+                <input id="occupancyRate" type="number" step="0.01" value="0.85" />
+              </div>
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;" type="button" onclick="runSimulation()">
+              분석 실행
+            </button>
+          </div>
+        </aside>
+
+        <section>
+          <div class="kpis">
+            <div class="kpi">
+              <div class="kpi-title">사업 IRR</div>
+              <div class="kpi-value" id="kpiIRR">7.2%</div>
+              <div class="kpi-sub">목표 7.0%</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">최저 DSCR</div>
+              <div class="kpi-value" id="kpiDSCR">1.18</div>
+              <div class="kpi-sub">기준 1.20 이상</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">총사업비</div>
+              <div class="kpi-value" id="kpiCost" style="font-size:22px;">60,480,000,000원</div>
+              <div class="kpi-sub">부대비 포함</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">적정 월 임대료</div>
+              <div class="kpi-value" id="kpiRent" style="font-size:22px;">184,000,000원</div>
+              <div class="kpi-sub">목표 IRR 역산</div>
+            </div>
+          </div>
+
+          <div id="alertBox" class="alert warn">
+            현재 구조에서는 DSCR이 1.2 미만입니다. 운영기간 연장 또는 임대료 조정이 필요합니다.
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" type="button" data-tab="cashflow">현금흐름</button>
+            <button class="tab-btn" type="button" data-tab="sensitivity">민감도</button>
+            <button class="tab-btn" type="button" data-tab="compare">비교 뷰</button>
+            <button class="tab-btn" type="button" data-tab="report">요약 리포트</button>
+          </div>
+
+          <div class="tab-panel active" id="tab-cashflow">
+            <div class="card">
+              <h3>40년 Cash Flow</h3>
+              <div class="sub">연도별 수익·운영비·원리금 상환·순현금흐름을 임시 그래프로 표시합니다.</div>
+              <div class="chart-box">
+                <svg class="chart-svg" viewBox="0 0 1000 340" preserveAspectRatio="none">
+                  <polyline
+                    fill="rgba(37,99,235,0.12)"
+                    stroke="none"
+                    points="0,270 70,250 140,230 210,225 280,210 350,198 420,185 490,180 560,165 630,155 700,145 770,142 840,138 910,135 1000,130 1000,340 0,340"
+                  ></polyline>
+                  <polyline
+                    fill="none"
+                    stroke="#2563eb"
+                    stroke-width="4"
+                    points="0,270 70,250 140,230 210,225 280,210 350,198 420,185 490,180 560,165 630,155 700,145 770,142 840,138 910,135 1000,130"
+                  ></polyline>
+                  <polyline
+                    fill="none"
+                    stroke="#f97316"
+                    stroke-width="4"
+                    points="0,290 70,282 140,274 210,266 280,258 350,250 420,244 490,238 560,232 630,226 700,220 770,214 840,208 910,202 1000,196"
+                  ></polyline>
+                  <polyline
+                    fill="none"
+                    stroke="#0f172a"
+                    stroke-width="4"
+                    points="0,305 70,292 140,280 210,268 280,252 350,238 420,222 490,208 560,193 630,180 700,165 770,156 840,148 910,142 1000,136"
+                  ></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-sensitivity">
+            <div class="card">
+              <h3>민감도 분석</h3>
+              <div class="sub">금리와 공사비, 가동률 변화가 수익성에 미치는 영향을 간단히 비교합니다.</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>시나리오</th>
+                    <th>IRR</th>
+                    <th>Min DSCR</th>
+                    <th>비고</th>
+                  </tr>
+                </thead>
+                <tbody id="sensitivityBody">
+                  <tr>
+                    <td>기준안</td>
+                    <td>7.2%</td>
+                    <td>1.18</td>
+                    <td>기본 입력값</td>
+                  </tr>
+                  <tr>
+                    <td>금리 +1%</td>
+                    <td>6.4%</td>
+                    <td>1.12</td>
+                    <td>재무 부담 증가</td>
+                  </tr>
+                  <tr>
+                    <td>공사비 +5%</td>
+                    <td>6.8%</td>
+                    <td>1.15</td>
+                    <td>총사업비 상승</td>
+                  </tr>
+                  <tr>
+                    <td>가동률 -10%</td>
+                    <td>6.1%</td>
+                    <td>1.06</td>
+                    <td>수익성 민감</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-compare">
+            <div class="card">
+              <h3>정부안 vs 인리얼티 제안안</h3>
+              <div class="sub">재무성과와 공공성 지표를 나란히 보여주는 임시 비교 화면입니다.</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>구분</th>
+                    <th>IRR</th>
+                    <th>SROI</th>
+                    <th>공공성 점수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>정부안</td>
+                    <td>5.2%</td>
+                    <td>1.15</td>
+                    <td>72</td>
+                  </tr>
+                  <tr>
+                    <td>인리얼티 제안안</td>
+                    <td id="compareIrr">7.2%</td>
+                    <td>1.42</td>
+                    <td>88</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="pill-row">
+                <div class="pill">정부안 IRR 5.2%</div>
+                <div class="pill">제안안 SROI 1.42</div>
+                <div class="pill">공공성 88점</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-report">
+            <div class="card">
+              <h3>사업 타당성 요약 리포트</h3>
+              <div class="sub">교육청 협상용 1페이지 요약 리포트 화면의 임시 버전입니다.</div>
+
+              <div class="report-box">
+                <div class="report-mini">
+                  <h4>대상 부지</h4>
+                  <div><strong>행당중학교 부지</strong></div>
+                  <div class="muted">서울특별시 성동구 행당동 000-0</div>
+                </div>
+                <div class="report-mini">
+                  <h4>핵심 결과</h4>
+                  <div id="reportSummary">IRR 7.2% / Min DSCR 1.18 / 월 임대료 184,000,000원</div>
+                </div>
+              </div>
+
+              <div class="report-mini" style="margin-bottom:14px;">
+                <h4>협상 포인트</h4>
+                <div class="muted">
+                  운영기간 조정, 임대료 역산 결과, 공공성 강화 항목, 정부안 대비 SROI 우위 근거를 함께 제시할 수 있습니다.
+                </div>
+              </div>
+
+              <button class="btn btn-primary" type="button" onclick="window.print()">PDF 리포트 생성</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <div class="footer-note">
+        이 화면은 GitHub Pages에서 404를 없애고 시뮬레이터 목업을 바로 보여주기 위한 임시 정적 버전입니다.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const currency = (v) =>
+      new Intl.NumberFormat("ko-KR", {
+        maximumFractionDigits: 0
+      }).format(Math.round(v)) + "원";
+
+    const percent = (v) => (v * 100).toFixed(1) + "%";
+
+    function lookupSite() {
+      const query = document.getElementById("query").value || "행당중학교";
+      const box = document.getElementById("siteBox");
+      box.innerHTML = `
+        <strong>${query} 부지</strong>
+        <div>서울특별시 예시 주소 000-0</div>
+        <div style="margin-top:10px;">용도지역: 제2종 일반주거지역</div>
+        <div>공시지가: 18,500,000원 / 평</div>
+        <div>시설 노후도: 71</div>
+        <div>학생 수 추이: -8.0%</div>
+        <div>연면적 가정: 4,200평</div>
+      `;
+    }
+
+    function runSimulation() {
+      const costPerPyeong = Number(document.getElementById("costPerPyeong").value || 12000000);
+      const targetIRR = Number(document.getElementById("targetIRR").value || 0.07);
+      const years = Number(document.getElementById("operationYears").value || 30);
+      const rate = Number(document.getElementById("interestRate").value || 0.045);
+      const seats = Number(document.getElementById("seatCount").value || 850);
+      const events = Number(document.getElementById("eventsPerMonth").value || 18);
+      const price = Number(document.getElementById("pricePerSeat").value || 28000);
+      const occupancy = Number(document.getElementById("occupancyRate").value || 0.85);
+
+      const gfa = 4200;
+      const totalConstruction = gfa * costPerPyeong;
+      const totalCost = totalConstruction * 1.2;
+
+      const irr = 0.064
+        + ((occupancy - 0.8) * 0.08)
+        + ((years - 30) * 0.0015)
+        - ((rate - 0.045) * 0.6)
+        + ((targetIRR - 0.07) * 0.4);
+
+      const minDSCR = 1.18
+        + ((occupancy - 0.85) * 0.9)
+        - ((rate - 0.045) * 3)
+        - ((costPerPyeong - 12000000) / 12000000 * 0.12);
+
+      const monthlyRent = totalCost * (targetIRR + 0.02) / 12 / 20;
+
+      document.getElementById("kpiIRR").textContent = percent(irr);
+      document.getElementById("kpiDSCR").textContent = minDSCR.toFixed(2);
+      document.getElementById("kpiCost").textContent = currency(totalCost);
+      document.getElementById("kpiRent").textContent = currency(monthlyRent);
+      document.getElementById("compareIrr").textContent = percent(irr);
+      document.getElementById("reportSummary").textContent =
+        `IRR ${percent(irr)} / Min DSCR ${minDSCR.toFixed(2)} / 월 임대료 ${currency(monthlyRent)}`;
+
+      const alertBox = document.getElementById("alertBox");
+      if (minDSCR < 1.2) {
+        alertBox.className = "alert warn";
+        alertBox.textContent = "현재 구조에서는 DSCR이 1.2 미만입니다. 운영기간 연장 또는 임대료 조정이 필요합니다.";
+      } else {
+        alertBox.className = "alert ok";
+        alertBox.textContent = "현재 가정에서는 DSCR 1.2 이상 기준을 충족합니다.";
+      }
+
+      const sensBody = document.getElementById("sensitivityBody");
+      sensBody.innerHTML = `
+        <tr>
+          <td>기준안</td>
+          <td>${percent(irr)}</td>
+          <td>${minDSCR.toFixed(2)}</td>
+          <td>기본 입력값</td>
+        </tr>
+        <tr>
+          <td>금리 +1%</td>
+          <td>${percent(irr - 0.008)}</td>
+          <td>${(minDSCR - 0.06).toFixed(2)}</td>
+          <td>재무 부담 증가</td>
+        </tr>
+        <tr>
+          <td>공사비 +5%</td>
+          <td>${percent(irr - 0.004)}</td>
+          <td>${(minDSCR - 0.03).toFixed(2)}</td>
+          <td>총사업비 상승</td>
+        </tr>
+        <tr>
+          <td>가동률 -10%</td>
+          <td>${percent(irr - 0.011)}</td>
+          <td>${(minDSCR - 0.12).toFixed(2)}</td>
+          <td>수익성 민감</td>
+        </tr>
+      `;
+    }
+
+    function saveScenario() {
+      const payload = {
+        query: document.getElementById("query").value,
+        costPerPyeong: document.getElementById("costPerPyeong").value,
+        targetIRR: document.getElementById("targetIRR").value,
+        operationYears: document.getElementById("operationYears").value,
+        interestRate: document.getElementById("interestRate").value,
+        seatCount: document.getElementById("seatCount").value,
+        eventsPerMonth: document.getElementById("eventsPerMonth").value,
+        pricePerSeat: document.getElementById("pricePerSeat").value,
+        occupancyRate: document.getElementById("occupancyRate").value
+      };
+      localStorage.setItem("inrealty-temp-simulator", JSON.stringify(payload));
+      alert("임시 저장되었습니다.");
+    }
+
+    function loadScenario() {
+      const raw = localStorage.getItem("inrealty-temp-simulator");
+      if (!raw) return;
+      try {
+        const saved = JSON.parse(raw);
+        const mapping = {
+          query: "query",
+          costPerPyeong: "costPerPyeong",
+          targetIRR: "targetIRR",
+          operationYears: "operationYears",
+          interestRate: "interestRate",
+          seatCount: "seatCount",
+          eventsPerMonth: "eventsPerMonth",
+          pricePerSeat: "pricePerSeat",
+          occupancyRate: "occupancyRate"
+        };
+        Object.keys(mapping).forEach((key) => {
+          const el = document.getElementById(mapping[key]);
+          if (el && saved[key] !== undefined) {
+            el.value = saved[key];
+          }
+        });
+      } catch (e) {}
+    }
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    loadScenario();
+    runSimulation();
+  </script>
+</body>
+</html>

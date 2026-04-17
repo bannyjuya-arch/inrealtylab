@@ -3,107 +3,84 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>INREALTY | Trust & Precision Simulator</title>
+  <title>In-Realty Lab | PF Simulator</title>
   <meta
     name="description"
-    content="INREALTY BOT/PPP 사업성 시뮬레이터"
+    content="In-Realty Lab BOT/PF 사업성 시뮬레이터"
   />
-
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <style>
     @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 
     :root {
-      --bg: #0b1118;
-      --bg-2: #101720;
+      --bg: #101720;
+      --bg-soft: #16212d;
       --panel: rgba(255, 255, 255, 0.08);
       --panel-strong: rgba(255, 255, 255, 0.12);
-      --line: rgba(255, 255, 255, 0.14);
-      --line-strong: rgba(212, 175, 55, 0.34);
-      --text: #f5f7fa;
-      --muted: #a8b3c2;
-      --main: #101720;
+      --line: rgba(255, 255, 255, 0.1);
+      --text: #f3f6fa;
+      --muted: #9ba7b5;
       --gold: #d4af37;
-      --gold-soft: rgba(212, 175, 55, 0.14);
+      --gold-soft: rgba(212, 175, 55, 0.15);
       --green: #28a745;
       --red: #dc3545;
-      --blue: #4ea1ff;
-      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --blue: #56a9ff;
+      --shadow: 0 24px 50px rgba(0, 0, 0, 0.28);
       --radius-xl: 24px;
       --radius-lg: 18px;
       --radius-md: 14px;
-      --max: 1560px;
+      --max: 1600px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     html, body {
       margin: 0;
       padding: 0;
       font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(78,161,255,0.12), transparent 30%),
-        radial-gradient(circle at top right, rgba(212,175,55,0.10), transparent 28%),
-        linear-gradient(180deg, #0a1016 0%, #101720 100%);
+        radial-gradient(circle at top left, rgba(86,169,255,0.12), transparent 22%),
+        radial-gradient(circle at top right, rgba(212,175,55,0.10), transparent 18%),
+        linear-gradient(180deg, #0d141c 0%, #101720 100%);
       color: var(--text);
     }
 
-    body {
-      min-height: 100vh;
-      line-height: 1.5;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button, input, select {
-      font: inherit;
-    }
-
-    .shell {
-      width: min(100% - 28px, var(--max));
-      margin: 0 auto;
-      padding: 18px 0 28px;
-    }
+    body { min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
 
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 20;
       backdrop-filter: blur(16px);
-      background: rgba(16, 23, 32, 0.72);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(16, 23, 32, 0.82);
+      border-bottom: 1px solid var(--line);
     }
 
     .topbar-inner {
-      width: min(100% - 28px, var(--max));
+      width: min(100% - 24px, var(--max));
       margin: 0 auto;
       min-height: 72px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 16px;
     }
 
-    .brand-wrap {
+    .brand {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .brand {
-      font-weight: 800;
-      letter-spacing: 0.08em;
+    .brand strong {
       font-size: 15px;
+      letter-spacing: 0.08em;
     }
 
-    .brand-sub {
-      color: var(--muted);
+    .brand span {
       font-size: 12px;
+      color: var(--muted);
     }
 
     .top-actions {
@@ -116,47 +93,47 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.04);
       color: var(--text);
-      border-radius: 999px;
       padding: 11px 16px;
-      font-weight: 700;
+      border-radius: 999px;
       cursor: pointer;
-      transition: 0.22s ease;
-      backdrop-filter: blur(10px);
+      font-weight: 700;
+      transition: 0.2s ease;
     }
 
     .btn:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow);
-      border-color: rgba(255,255,255,0.22);
     }
 
     .btn-gold {
-      background: linear-gradient(135deg, #c89f24 0%, #d4af37 48%, #f1d97b 100%);
+      background: linear-gradient(135deg, #b38c1f 0%, #d4af37 48%, #f1dd8f 100%);
       color: #101720;
-      border-color: rgba(212,175,55,0.7);
+      border-color: rgba(212,175,55,0.5);
+    }
+
+    .page {
+      width: min(100% - 24px, var(--max));
+      margin: 0 auto;
+      padding: 20px 0 28px;
     }
 
     .hero {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 18px;
       padding: 22px 24px;
       border-radius: 26px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      margin-bottom: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.05));
       border: 1px solid rgba(255,255,255,0.10);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(18px);
     }
 
-    .eyebrow {
+    .hero .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(212,175,55,0.12);
+      background: var(--gold-soft);
       border: 1px solid rgba(212,175,55,0.28);
       color: var(--gold);
       font-size: 12px;
@@ -164,17 +141,17 @@
       margin-bottom: 12px;
     }
 
-    h1 {
+    .hero h1 {
       margin: 0 0 8px;
-      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 1.05;
       letter-spacing: -0.04em;
-      line-height: 1.06;
     }
 
     .hero p {
       margin: 0;
       color: var(--muted);
-      max-width: 760px;
+      max-width: 900px;
     }
 
     .layout {
@@ -187,14 +164,14 @@
     .glass {
       background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.05));
       border: 1px solid rgba(255,255,255,0.10);
-      border-radius: var(--radius-xl);
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
+      border-radius: var(--radius-xl);
     }
 
-    .sidebar {
+    .sidebar, .insight {
       position: sticky;
-      top: 92px;
+      top: 90px;
       padding: 18px;
     }
 
@@ -208,7 +185,7 @@
     .section-sub {
       color: var(--muted);
       font-size: 13px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .block {
@@ -223,38 +200,57 @@
       padding-bottom: 0;
     }
 
-    .field {
-      margin-bottom: 14px;
-    }
+    .field { margin-bottom: 14px; }
 
     .field label {
       display: block;
-      margin-bottom: 7px;
       font-size: 13px;
       font-weight: 700;
-      color: #dbe4ef;
+      margin-bottom: 7px;
+      color: #dce5ef;
     }
 
-    .input,
-    .select {
+    .input, .select {
       width: 100%;
-      padding: 12px 13px;
-      border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
       background: rgba(255,255,255,0.06);
       color: var(--text);
+      padding: 12px 13px;
       outline: none;
     }
 
-    .input:focus,
-    .select:focus {
-      border-color: rgba(212,175,55,0.45);
+    .input:focus, .select:focus {
+      border-color: rgba(212,175,55,0.4);
       box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
     }
 
-    .range-wrap {
-      margin-bottom: 14px;
+    .preset-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
+
+    .preset-btn {
+      flex: 1;
+      min-width: 88px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .preset-btn.active {
+      background: rgba(212,175,55,0.16);
+      border-color: rgba(212,175,55,0.34);
+      color: var(--gold);
+    }
+
+    .range-wrap { margin-bottom: 14px; }
 
     .range-top {
       display: flex;
@@ -264,21 +260,15 @@
       font-size: 13px;
     }
 
-    .range-top strong {
-      color: #e7edf5;
-    }
-
-    .range-top span {
-      color: var(--gold);
-      font-weight: 800;
-    }
+    .range-top strong { color: #ecf1f7; }
+    .range-top span { color: var(--gold); font-weight: 800; }
 
     input[type="range"] {
       width: 100%;
       appearance: none;
       height: 7px;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(212,175,55,0.7), rgba(78,161,255,0.65));
+      background: linear-gradient(90deg, rgba(212,175,55,0.75), rgba(86,169,255,0.7));
       outline: none;
     }
 
@@ -290,32 +280,6 @@
       background: #fff;
       border: 2px solid var(--gold);
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-    }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .usage-tab {
-      flex: 1;
-      min-width: 82px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
-      cursor: pointer;
-      font-weight: 700;
-      transition: 0.2s ease;
-    }
-
-    .usage-tab.active {
-      background: rgba(212,175,55,0.16);
-      border-color: rgba(212,175,55,0.36);
-      color: var(--gold);
     }
 
     .switch-wrap {
@@ -336,8 +300,8 @@
     }
 
     .switch-text span {
-      color: var(--muted);
       font-size: 12px;
+      color: var(--muted);
     }
 
     .switch {
@@ -347,15 +311,13 @@
       flex: 0 0 auto;
     }
 
-    .switch input {
-      display: none;
-    }
+    .switch input { display: none; }
 
     .slider-toggle {
       position: absolute;
       inset: 0;
-      background: rgba(255,255,255,0.18);
       border-radius: 999px;
+      background: rgba(255,255,255,0.18);
       cursor: pointer;
       transition: 0.2s ease;
     }
@@ -363,14 +325,13 @@
     .slider-toggle::before {
       content: "";
       position: absolute;
-      width: 24px;
-      height: 24px;
       left: 3px;
       top: 3px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: white;
+      background: #fff;
       transition: 0.2s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
 
     .switch input:checked + .slider-toggle {
@@ -382,91 +343,76 @@
       background: #101720;
     }
 
-    .site-box {
+    .site-meta {
       margin-top: 12px;
-      border-radius: 18px;
       padding: 14px;
+      border-radius: 18px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       font-size: 13px;
       color: var(--muted);
     }
 
-    .site-box strong {
+    .site-meta strong {
       display: block;
+      color: #fff;
       margin-bottom: 8px;
-      font-size: 14px;
-      color: white;
     }
 
-    .main {
-      min-width: 0;
-    }
+    .main { min-width: 0; }
 
-    .scoreboard {
+    .kpis {
       display: grid;
-      grid-template-columns: 1.1fr 1fr 1fr;
+      grid-template-columns: 1.2fr 1fr 1fr;
       gap: 14px;
       margin-bottom: 16px;
     }
 
-    .score-card {
-      padding: 18px;
+    .kpi {
       min-height: 128px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
-    .score-label {
-      color: var(--muted);
+    .kpi-label {
       font-size: 13px;
+      color: var(--muted);
       margin-bottom: 8px;
     }
 
-    .score-value {
+    .kpi-value {
       font-size: 38px;
       font-weight: 900;
-      letter-spacing: -0.05em;
       line-height: 1;
+      letter-spacing: -0.05em;
     }
 
-    .score-value.gold {
-      color: var(--gold);
-      text-shadow: 0 0 18px rgba(212,175,55,0.18);
-    }
+    .kpi-value.gold { color: var(--gold); }
+    .kpi-value.ok { color: var(--green); }
+    .kpi-value.warn { color: var(--red); }
 
-    .score-sub {
+    .kpi-sub {
       margin-top: 8px;
       color: var(--muted);
       font-size: 12px;
     }
 
-    .blink {
-      animation: blinkWarn 1s infinite;
-    }
-
-    @keyframes blinkWarn {
-      0%, 100% { color: #ff9aa5; }
-      50% { color: var(--red); }
-    }
-
-    .chart-card,
-    .panel-card {
+    .chart-card, .panel-card {
       padding: 18px;
       margin-bottom: 16px;
     }
 
     .card-head {
       display: flex;
-      align-items: start;
       justify-content: space-between;
+      align-items: flex-start;
       gap: 14px;
       margin-bottom: 14px;
     }
 
-    .card-head h2,
-    .card-head h3 {
+    .card-head h2, .card-head h3 {
       margin: 0 0 4px;
       font-size: 18px;
       letter-spacing: -0.02em;
@@ -478,7 +424,7 @@
       font-size: 13px;
     }
 
-    .badge-mini {
+    .pill {
       padding: 6px 10px;
       border-radius: 999px;
       background: rgba(212,175,55,0.12);
@@ -489,60 +435,12 @@
       white-space: nowrap;
     }
 
-    .chart-wrap {
-      position: relative;
-      height: 420px;
-      border-radius: 20px;
-      overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
-        repeating-linear-gradient(
-          to right,
-          transparent,
-          transparent 54px,
-          rgba(255,255,255,0.05) 54px,
-          rgba(255,255,255,0.05) 55px
-        ),
-        repeating-linear-gradient(
-          to top,
-          transparent,
-          transparent 54px,
-          rgba(255,255,255,0.05) 54px,
-          rgba(255,255,255,0.05) 55px
-        );
-      border: 1px solid rgba(255,255,255,0.08);
+    #cashflowChart {
+      min-height: 430px;
     }
 
-    .chart-svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .chart-legend {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
+    .guardrail {
       margin-top: 12px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .legend-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      display: inline-block;
-    }
-
-    .tooltip-box {
-      margin-top: 14px;
       padding: 13px 14px;
       border-radius: 16px;
       font-size: 13px;
@@ -551,47 +449,44 @@
       color: var(--muted);
     }
 
-    .tooltip-box.warn {
+    .guardrail.warn {
       border-color: rgba(220,53,69,0.35);
       color: #ffd3d8;
       background: rgba(220,53,69,0.08);
     }
 
-    .insight-panel {
-      position: sticky;
-      top: 92px;
-      padding: 18px;
+    .map-shell {
+      margin-top: 10px;
     }
 
-    .mini-map {
-      height: 170px;
+    .map-box {
+      height: 220px;
       border-radius: 18px;
       overflow: hidden;
       position: relative;
       background:
-        radial-gradient(circle at 20% 30%, rgba(78,161,255,0.22), transparent 22%),
-        radial-gradient(circle at 70% 55%, rgba(212,175,55,0.20), transparent 18%),
+        radial-gradient(circle at 20% 30%, rgba(86,169,255,0.22), transparent 22%),
+        radial-gradient(circle at 70% 55%, rgba(212,175,55,0.18), transparent 18%),
         linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
       border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 16px;
     }
 
-    .mini-map::before,
-    .mini-map::after {
+    .map-box::before,
+    .map-box::after {
       content: "";
       position: absolute;
       background: rgba(255,255,255,0.08);
     }
 
-    .mini-map::before {
+    .map-box::before {
       width: 140%;
       height: 1px;
-      top: 42%;
+      top: 44%;
       left: -10%;
       transform: rotate(-14deg);
     }
 
-    .mini-map::after {
+    .map-box::after {
       width: 1px;
       height: 150%;
       top: -18%;
@@ -610,11 +505,41 @@
       box-shadow: 0 0 0 6px rgba(212,175,55,0.18);
     }
 
-    .vfm-bar-wrap {
-      margin-top: 10px;
+    .map-api-badge {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(16,23,32,0.8);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      color: var(--muted);
     }
 
-    .vfm-top {
+    .map-meta {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .map-meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .map-meta-row strong {
+      color: #dfe7f0;
+    }
+
+    .bar-shell { margin-top: 10px; }
+    .bar-top {
       display: flex;
       justify-content: space-between;
       gap: 10px;
@@ -622,7 +547,7 @@
       font-size: 13px;
     }
 
-    .vfm-bar {
+    .bar-track {
       height: 16px;
       border-radius: 999px;
       overflow: hidden;
@@ -630,10 +555,10 @@
       border: 1px solid rgba(255,255,255,0.06);
     }
 
-    .vfm-fill {
+    .bar-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #9b7d1b, #d4af37, #f0d98a);
+      background: linear-gradient(90deg, #a88419, #d4af37, #f0de94);
       transition: width 0.35s ease;
     }
 
@@ -644,9 +569,9 @@
     }
 
     th, td {
+      text-align: left;
       padding: 10px 8px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
-      text-align: left;
     }
 
     th {
@@ -655,9 +580,11 @@
       font-weight: 700;
     }
 
-    td {
-      color: #eaf0f7;
-    }
+    td { color: #ebf1f7; }
+
+    .heat-high { color: var(--green); font-weight: 800; }
+    .heat-mid { color: var(--gold); font-weight: 800; }
+    .heat-low { color: var(--red); font-weight: 800; }
 
     .gold-button {
       width: 100%;
@@ -684,9 +611,7 @@
       margin-top: 10px;
     }
 
-    .hidden-print-report {
-      display: none;
-    }
+    .print-report { display: none; }
 
     @page {
       size: A4;
@@ -699,17 +624,11 @@
         color: #111827;
       }
 
-      .topbar,
-      .hero,
-      .sidebar,
-      .insight-panel,
-      .tooltip-box,
-      .gold-button,
-      .btn {
+      .topbar, .hero, .sidebar, .insight, .gold-button, .btn, .guardrail {
         display: none !important;
       }
 
-      .shell {
+      .page {
         width: 100%;
         padding: 0;
       }
@@ -722,13 +641,8 @@
         display: none !important;
       }
 
-      .hidden-print-report {
+      .print-report {
         display: block !important;
-        color: #111827;
-      }
-
-      .print-wrap {
-        padding: 0;
       }
 
       .print-header {
@@ -744,8 +658,8 @@
       .print-title {
         font-size: 20pt;
         font-weight: 900;
-        letter-spacing: -0.04em;
         margin: 0;
+        letter-spacing: -0.04em;
       }
 
       .print-sub {
@@ -836,54 +750,38 @@
       .layout {
         grid-template-columns: 300px minmax(0, 1fr);
       }
-
-      .insight-panel {
+      .insight {
         grid-column: 1 / -1;
         position: static;
       }
     }
 
     @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar,
-      .insight-panel {
-        position: static;
-      }
-
-      .scoreboard {
-        grid-template-columns: 1fr;
-      }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar, .insight { position: static; }
+      .kpis { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 720px) {
-      .shell {
-        width: min(100% - 18px, var(--max));
+      .topbar-inner, .page {
+        width: min(100% - 16px, var(--max));
       }
-
-      .hero {
-        padding: 18px;
-      }
-
       .topbar-inner {
-        width: min(100% - 18px, var(--max));
         flex-direction: column;
         align-items: flex-start;
         padding: 12px 0;
       }
+      .hero { padding: 18px; }
     }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="brand-wrap">
-        <a class="brand" href="../">INREALTY</a>
-        <div class="brand-sub">Trust & Precision Feasibility Engine</div>
+      <div class="brand">
+        <strong>IN-REALTY LAB</strong>
+        <span>Professional PF Analytics Simulator</span>
       </div>
-
       <div class="top-actions">
         <a class="btn" href="../">메인으로</a>
         <button class="btn" type="button" onclick="saveScenario()">시나리오 저장</button>
@@ -892,51 +790,47 @@
     </div>
   </header>
 
-  <main class="shell">
+  <main class="page">
     <section class="hero glass">
-      <div>
-        <div class="eyebrow">TRUST & PRECISION · PPP / BOT ANALYTICS</div>
-        <h1>BOT 수익성 시뮬레이터</h1>
-        <p>
-          공공개발 의사결정에 필요한 수익성, 금융 안정성, 민감도, 정책 비교 근거를
-          실시간으로 시각화합니다.
-        </p>
-      </div>
+      <div class="eyebrow">TRUST & PRECISION · BOT / PF ANALYTICS</div>
+      <h1>리얼티랩 웹 시뮬레이터</h1>
+      <p>
+        장기 BOT 구조의 수익성, 금융 안정성, 협상 논리를 한 화면에서 해석하는
+        전문 PF 분석 솔루션형 시제품입니다.
+      </p>
     </section>
 
     <section class="layout">
       <aside class="sidebar glass">
         <div class="block">
-          <h2 class="section-title">시나리오 컨트롤러</h2>
-          <div class="section-sub">사업 구조를 실시간으로 조정하는 조종석입니다.</div>
+          <h2 class="section-title">Input Controller</h2>
+          <div class="section-sub">실시간 계산을 위한 입력 패널</div>
 
           <div class="field">
-            <label for="query">주소 / 학교명 검색</label>
-            <input id="query" class="input" value="행당중학교" placeholder="예: 행당중학교" />
+            <label for="query">주소 검색</label>
+            <input id="query" class="input" value="행당중학교" placeholder="예: 행당중학교 / 서울시 성동구 ..." />
           </div>
 
-          <button class="btn btn-gold" style="width:100%;" type="button" onclick="lookupSite()">
-            부지 조회
+          <button class="btn btn-gold" type="button" style="width:100%;" onclick="lookupSite()">
+            공시지가 / 토지이용계획 조회
           </button>
 
-          <div class="site-box" id="siteBox">
+          <div class="site-meta" id="siteMeta">
             <strong>행당중학교 부지</strong>
             <div>서울특별시 성동구 행당동 000-0</div>
-            <div style="margin-top: 8px;">용도지역: 제2종 일반주거지역</div>
-            <div>공시지가: 18,500,000원 / 평</div>
-            <div>시설 노후도: 71</div>
-            <div>학생 수 추이: -8.0%</div>
-            <div>연면적 가정: 4,200평</div>
+            <div style="margin-top:8px;">공시지가: 18,500,000원 / 평</div>
+            <div>용도지역: 제2종 일반주거지역</div>
+            <div>토지비 반영값: 18,500,000원 / 평</div>
           </div>
         </div>
 
         <div class="block">
           <div class="field">
-            <label>용도 선택</label>
-            <div class="tabs">
-              <button class="usage-tab active" type="button" data-usage="performance">공연장</button>
-              <button class="usage-tab" type="button" data-usage="office">오피스</button>
-              <button class="usage-tab" type="button" data-usage="sports">체육시설</button>
+            <label>시설 용도 Preset</label>
+            <div class="preset-tabs">
+              <button class="preset-btn active" type="button" data-preset="performance">뮤지컬 공연장</button>
+              <button class="preset-btn" type="button" data-preset="office">프라임 오피스</button>
+              <button class="preset-btn" type="button" data-preset="sports">복합 체육시설</button>
             </div>
           </div>
         </div>
@@ -944,7 +838,7 @@
         <div class="block">
           <div class="range-wrap">
             <div class="range-top">
-              <strong>사업 기간</strong>
+              <strong>운영 기간</strong>
               <span id="yearsValue">30년</span>
             </div>
             <input id="operationYears" type="range" min="30" max="40" step="1" value="30" />
@@ -955,12 +849,12 @@
               <strong>평당 공사비</strong>
               <span id="costValue">1,200만 원</span>
             </div>
-            <input id="costPerPyeong" type="range" min="10000000" max="20000000" step="100000" value="12000000" />
+            <input id="costPerPyeong" type="range" min="12000000" max="18000000" step="100000" value="12000000" />
           </div>
 
           <div class="range-wrap">
             <div class="range-top">
-              <strong>목표 가동률</strong>
+              <strong>가동률</strong>
               <span id="occupancyValue">85%</span>
             </div>
             <input id="occupancyRate" type="range" min="0.5" max="1" step="0.01" value="0.85" />
@@ -982,288 +876,272 @@
 
         <div class="block">
           <div class="field">
-            <label for="targetIRR">목표 수익률</label>
+            <label for="interestRate">금리</label>
+            <input id="interestRate" class="input" type="number" step="0.001" value="0.045" />
+          </div>
+
+          <div class="field">
+            <label for="seatCount">수용량 / 좌석 수</label>
+            <input id="seatCount" class="input" type="number" value="850" />
+          </div>
+
+          <div class="field">
+            <label for="targetIRR">목표 IRR</label>
             <select id="targetIRR" class="select">
               <option value="0.06">6.0%</option>
               <option value="0.07" selected>7.0%</option>
               <option value="0.08">8.0%</option>
             </select>
           </div>
-
-          <div class="field">
-            <label for="interestRate">금리</label>
-            <input id="interestRate" class="input" type="number" step="0.001" value="0.045" />
-          </div>
-
-          <div class="field">
-            <label for="seatCount">좌석 수 / 수용량</label>
-            <input id="seatCount" class="input" type="number" value="850" />
-          </div>
         </div>
       </aside>
 
       <section class="main">
-        <div class="scoreboard">
-          <div class="score-card glass">
-            <div class="score-label">Project IRR</div>
-            <div class="score-value gold" id="kpiIRR">7.2%</div>
-            <div class="score-sub">핵심 수익성 지표</div>
+        <div class="kpis">
+          <div class="kpi glass">
+            <div class="kpi-label">Project IRR</div>
+            <div class="kpi-value gold" id="kpiIRR">7.2%</div>
+            <div class="kpi-sub">장기 BOT 수익성 핵심 지표</div>
           </div>
 
-          <div class="score-card glass">
-            <div class="score-label">Average DSCR</div>
-            <div class="score-value" id="kpiDSCR">1.18</div>
-            <div class="score-sub">1.20 미만 시 경고</div>
+          <div class="kpi glass">
+            <div class="kpi-label">Avg. DSCR</div>
+            <div class="kpi-value warn" id="kpiDSCR">1.18</div>
+            <div class="kpi-sub">1.20 미만 시 위험 신호</div>
           </div>
 
-          <div class="score-card glass">
-            <div class="score-label">BEP</div>
-            <div class="score-value" id="kpiBEP">14Y</div>
-            <div class="score-sub">손익분기 도달 예상 시점</div>
+          <div class="kpi glass">
+            <div class="kpi-label">Break-even Year</div>
+            <div class="kpi-value" id="kpiBEP">14Y</div>
+            <div class="kpi-sub">자본 회수 예상 시점</div>
           </div>
         </div>
 
         <div class="chart-card glass">
           <div class="card-head">
             <div>
-              <h2>40-Year Cash Flow</h2>
-              <p>건설기 음수 구간과 운영기 양수 구간을 구분해 표시합니다.</p>
+              <h2>40-Year Cash Flow Analysis</h2>
+              <p>건설기, 안정기, 수익 극대화기를 구간별로 분리해 시각화합니다.</p>
             </div>
-            <div class="badge-mini">30년 이후 골드 하이라이트</div>
+            <div class="pill">31~40년 Gold Highlight</div>
           </div>
 
-          <div class="chart-wrap">
-            <svg class="chart-svg" viewBox="0 0 1000 420" preserveAspectRatio="none" id="cashflowChart"></svg>
-          </div>
+          <div id="cashflowChart"></div>
 
-          <div class="chart-legend">
-            <span class="legend-item"><span class="legend-dot" style="background:#dc3545;"></span> 건설기 현금흐름</span>
-            <span class="legend-item"><span class="legend-dot" style="background:#28a745;"></span> 운영기 현금흐름</span>
-            <span class="legend-item"><span class="legend-dot" style="background:#d4af37;"></span> 수익 폭발 구간</span>
-          </div>
-
-          <div class="tooltip-box" id="dscrGuide">
-            DSCR이 1.2 미만이면 운영기간을 40년으로 늘리거나 공사비를 낮추는 전략이 필요합니다.
+          <div class="guardrail" id="dscrGuardrail">
+            DSCR이 1.2 미만일 경우 운영기간 연장 또는 공사비 조정이 필요합니다.
           </div>
         </div>
       </section>
 
-      <aside class="insight-panel glass">
+      <aside class="insight glass">
         <div class="block">
-          <h2 class="section-title">Insight Panel</h2>
-          <div class="section-sub">협상과 의사결정을 위한 보조 근거입니다.</div>
+          <h2 class="section-title">Map & Site Intelligence</h2>
+          <div class="section-sub">실지도 API 연결 예정 영역</div>
 
-          <div class="mini-map">
-            <div class="map-pin"></div>
+          <div class="map-shell">
+            <div class="map-box" id="mapBox">
+              <div class="map-api-badge">API Ready</div>
+              <div class="map-pin"></div>
+            </div>
+
+            <div class="map-meta">
+              <div class="map-meta-row">
+                <strong>대상 부지</strong>
+                <span id="mapSiteName">행당중학교 부지</span>
+              </div>
+              <div class="map-meta-row">
+                <strong>좌표</strong>
+                <span id="mapCoords">37.5610, 127.0365</span>
+              </div>
+              <div class="map-meta-row">
+                <strong>주변 시세</strong>
+                <span id="mapPrice">18,500,000원 / 평</span>
+              </div>
+            </div>
           </div>
-          <div class="note">선택 부지와 주변 시세/입지 정보를 추후 지도 API로 연결합니다.</div>
         </div>
 
         <div class="block">
-          <h2 class="section-title">VFM 비교바</h2>
-          <div class="section-sub">교육청 직접 운영 대비 절감 예산 추정</div>
-          <div class="vfm-top">
-            <strong>예산 절감 효과</strong>
-            <span id="vfmValue" style="color:var(--gold); font-weight:800;">18%</span>
-          </div>
-          <div class="vfm-bar">
-            <div class="vfm-fill" id="vfmFill"></div>
+          <h2 class="section-title">VFM(적격성) 비교</h2>
+          <div class="section-sub">교육청 직접 운영 대비 예산 절감 추정</div>
+          <div class="bar-shell">
+            <div class="bar-top">
+              <strong>예산 절감 효과</strong>
+              <span id="vfmValue" style="color:var(--gold); font-weight:800;">18%</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="vfmFill"></div>
+            </div>
           </div>
         </div>
 
         <div class="block">
-          <h2 class="section-title">민감도 테이블</h2>
-          <div class="section-sub">금리 변동에 따른 수익률 변화</div>
+          <h2 class="section-title">금리 민감도 히트맵</h2>
+          <div class="section-sub">±1% 변동에 따른 IRR 변화</div>
           <table>
             <thead>
               <tr>
                 <th>금리</th>
                 <th>IRR</th>
-                <th>평가</th>
+                <th>해석</th>
               </tr>
             </thead>
             <tbody id="sensitivityBody">
-              <tr><td>3.5%</td><td>7.8%</td><td>양호</td></tr>
-              <tr><td>4.5%</td><td>7.2%</td><td>기준</td></tr>
-              <tr><td>5.5%</td><td>6.5%</td><td>주의</td></tr>
+              <tr><td>3.5%</td><td class="heat-high">7.8%</td><td>양호</td></tr>
+              <tr><td>4.5%</td><td class="heat-mid">7.2%</td><td>기준</td></tr>
+              <tr><td>5.5%</td><td class="heat-low">6.5%</td><td>주의</td></tr>
             </tbody>
           </table>
         </div>
 
         <div class="block">
-          <h2 class="section-title">핵심 수치</h2>
-          <div class="section-sub">협상 자료에 바로 넣을 값</div>
+          <h2 class="section-title">Strategic Snapshot</h2>
+          <div class="section-sub">협상용 주요 수치</div>
           <table>
             <tbody>
-              <tr>
-                <th>총사업비</th>
-                <td id="kpiCost">60,480,000,000원</td>
-              </tr>
-              <tr>
-                <th>적정 월 임대료</th>
-                <td id="kpiRent">184,000,000원</td>
-              </tr>
-              <tr>
-                <th>토지비</th>
-                <td id="landCostLabel">0원</td>
-              </tr>
+              <tr><th>총사업비</th><td id="kpiCost">60,480,000,000원</td></tr>
+              <tr><th>적정 월 임대료</th><td id="kpiRent">184,000,000원</td></tr>
+              <tr><th>토지비</th><td id="landCostLabel">0원</td></tr>
             </tbody>
           </table>
         </div>
 
-        <button class="gold-button" type="button" onclick="window.print()">
-          협상용 PDF 리포트 생성
-        </button>
-        <div class="note">현재는 인쇄 최적화 방식이며, 추후 jsPDF/PDF 엔진으로 고도화 가능합니다.</div>
+        <button class="gold-button" type="button" onclick="window.print()">보고서 생성</button>
+        <div class="note">현재는 브라우저 인쇄 기반이며 추후 jsPDF 서버형 리포트로 전환 가능합니다.</div>
       </aside>
     </section>
 
-    <section class="hidden-print-report">
-      <div class="print-wrap">
-        <div class="print-header">
-          <div>
-            <h1 class="print-title">사업 타당성 요약 리포트</h1>
-            <div class="print-sub">BOT/PPP Feasibility Summary</div>
+    <section class="print-report">
+      <div class="print-header">
+        <div>
+          <h1 class="print-title">사업 타당성 요약 리포트</h1>
+          <div class="print-sub">In-Realty Lab BOT / PF Analysis</div>
+        </div>
+        <div class="print-brand">
+          <strong>IN-REALTY LAB</strong><br />
+          PF Simulator
+        </div>
+      </div>
+
+      <div class="print-section">
+        <h2>1. 프로젝트 개요</h2>
+        <table class="print-table">
+          <tr>
+            <th style="width:22%;">대상 부지</th>
+            <td id="printSiteName">행당중학교 부지</td>
+            <th style="width:22%;">운영 기간</th>
+            <td id="printYears">30년</td>
+          </tr>
+          <tr>
+            <th>시설 용도</th>
+            <td id="printPreset">뮤지컬 공연장</td>
+            <th>목표 IRR</th>
+            <td id="printTargetIRR">7.0%</td>
+          </tr>
+          <tr>
+            <th>금리</th>
+            <td id="printRate">4.5%</td>
+            <th>학교복합시설법</th>
+            <td id="printLandLaw">적용</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="print-section">
+        <h2>2. 핵심 재무지표</h2>
+        <div class="print-grid">
+          <div class="print-card">
+            <h3>Project IRR</h3>
+            <div class="value" id="printIRR">7.2%</div>
           </div>
-          <div class="print-brand">
-            <strong>INREALTY</strong><br />
-            Trust & Precision Simulator
+          <div class="print-card">
+            <h3>Avg. DSCR</h3>
+            <div class="value" id="printDSCR">1.18</div>
+          </div>
+          <div class="print-card">
+            <h3>총사업비</h3>
+            <div class="value" id="printCost">60,480,000,000원</div>
+          </div>
+          <div class="print-card">
+            <h3>적정 월 임대료</h3>
+            <div class="value" id="printRent">184,000,000원</div>
           </div>
         </div>
+      </div>
 
-        <div class="print-section">
-          <h2>1. 프로젝트 개요</h2>
-          <table class="print-table">
-            <tr>
-              <th style="width:22%">대상 부지</th>
-              <td id="printSiteName">행당중학교 부지</td>
-              <th style="width:22%">사업 기간</th>
-              <td id="printYears">30년</td>
-            </tr>
-            <tr>
-              <th>용도</th>
-              <td id="printUsage">공연장</td>
-              <th>목표 수익률</th>
-              <td id="printTargetIRR">7.0%</td>
-            </tr>
+      <div class="print-section">
+        <h2>3. 민감도 분석</h2>
+        <table class="print-table">
+          <thead>
             <tr>
               <th>금리</th>
-              <td id="printRate">4.5%</td>
-              <th>토지비 적용</th>
-              <td id="printLandLaw">적용</td>
+              <th>IRR</th>
+              <th>해석</th>
             </tr>
-          </table>
-        </div>
+          </thead>
+          <tbody id="printSensitivityBody"></tbody>
+        </table>
+      </div>
 
-        <div class="print-section">
-          <h2>2. 핵심 재무지표</h2>
-          <div class="print-grid">
-            <div class="print-card">
-              <h3>Project IRR</h3>
-              <div class="value" id="printIRR">7.2%</div>
-            </div>
-            <div class="print-card">
-              <h3>Average DSCR</h3>
-              <div class="value" id="printDSCR">1.18</div>
-            </div>
-            <div class="print-card">
-              <h3>총사업비</h3>
-              <div class="value" id="printCost">60,480,000,000원</div>
-            </div>
-            <div class="print-card">
-              <h3>적정 월 임대료</h3>
-              <div class="value" id="printRent">184,000,000원</div>
-            </div>
-          </div>
+      <div class="print-section">
+        <h2>4. 협상 포인트</h2>
+        <div class="print-note" id="printNote">
+          DSCR이 기준에 미달할 경우 운영기간 연장 또는 공사비 조정 검토가 필요합니다.
         </div>
+      </div>
 
-        <div class="print-section">
-          <h2>3. 민감도 분석</h2>
-          <table class="print-table">
-            <thead>
-              <tr>
-                <th>금리</th>
-                <th>IRR</th>
-                <th>평가</th>
-              </tr>
-            </thead>
-            <tbody id="printSensitivityBody"></tbody>
-          </table>
-        </div>
-
-        <div class="print-section">
-          <h2>4. 협상 포인트</h2>
-          <div class="print-note" id="printNote">
-            DSCR이 기준에 미달하는 경우 운영기간 연장 또는 공사비 조정이 필요합니다.
-          </div>
-        </div>
-
-        <div class="print-footer">
-          <div>INREALTY Feasibility Simulator</div>
-          <div id="printDate"></div>
-        </div>
+      <div class="print-footer">
+        <div>In-Realty Lab Simulator</div>
+        <div id="printDate"></div>
       </div>
     </section>
   </main>
 
   <script>
     const state = {
-      usage: "performance"
+      preset: "performance",
+      site: {
+        name: "행당중학교 부지",
+        address: "서울특별시 성동구 행당동 000-0",
+        officialLandPrice: 18500000,
+        zoning: "제2종 일반주거지역",
+        coords: "37.5610, 127.0365"
+      }
     };
 
-    const usageMeta = {
-      performance: { label: "공연장", basePrice: 28000, vfm: 18 },
-      office: { label: "오피스", basePrice: 22000, vfm: 12 },
-      sports: { label: "체육시설", basePrice: 18000, vfm: 15 }
+    const presets = {
+      performance: {
+        label: "뮤지컬 공연장",
+        basePricePerSeat: 28000,
+        defaultOccupancy: 0.85,
+        defaultCost: 12000000,
+        monthlyOps: 18,
+        vfmBase: 18
+      },
+      office: {
+        label: "프라임 오피스",
+        basePricePerSeat: 22000,
+        defaultOccupancy: 0.90,
+        defaultCost: 14500000,
+        monthlyOps: 22,
+        vfmBase: 12
+      },
+      sports: {
+        label: "복합 체육시설",
+        basePricePerSeat: 18000,
+        defaultOccupancy: 0.78,
+        defaultCost: 13500000,
+        monthlyOps: 24,
+        vfmBase: 15
+      }
     };
 
-    const krw = (v) =>
-      new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 0 }).format(Math.round(v)) + "원";
+    let chart;
 
+    const krw = (v) => new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 0 }).format(Math.round(v)) + "원";
     const pct = (v) => (v * 100).toFixed(1) + "%";
-
     const millionWon = (v) => (v / 10000).toLocaleString("ko-KR") + "만 원";
-
-    function lookupSite() {
-      const query = document.getElementById("query").value || "행당중학교";
-      document.getElementById("siteBox").innerHTML = `
-        <strong>${query} 부지</strong>
-        <div>서울특별시 예시 주소 000-0</div>
-        <div style="margin-top: 8px;">용도지역: 제2종 일반주거지역</div>
-        <div>공시지가: 18,500,000원 / 평</div>
-        <div>시설 노후도: 71</div>
-        <div>학생 수 추이: -8.0%</div>
-        <div>연면적 가정: 4,200평</div>
-      `;
-      renderAll();
-    }
-
-    function bindInputs() {
-      const years = document.getElementById("operationYears");
-      const cost = document.getElementById("costPerPyeong");
-      const occ = document.getElementById("occupancyRate");
-      const irr = document.getElementById("targetIRR");
-      const rate = document.getElementById("interestRate");
-      const seats = document.getElementById("seatCount");
-      const landLaw = document.getElementById("landLawToggle");
-
-      years.addEventListener("input", renderAll);
-      cost.addEventListener("input", renderAll);
-      occ.addEventListener("input", renderAll);
-      irr.addEventListener("change", renderAll);
-      rate.addEventListener("input", renderAll);
-      seats.addEventListener("input", renderAll);
-      landLaw.addEventListener("change", renderAll);
-
-      document.querySelectorAll(".usage-tab").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".usage-tab").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          state.usage = btn.dataset.usage;
-          renderAll();
-        });
-      });
-    }
 
     function getInputs() {
       return {
@@ -1278,21 +1156,84 @@
       };
     }
 
-    function buildModel(inputs) {
-      const meta = usageMeta[state.usage];
-      const pricePerSeat = meta.basePrice;
-      const eventsPerMonth = state.usage === "office" ? 22 : state.usage === "sports" ? 24 : 18;
+    function applyPreset(presetKey) {
+      const p = presets[presetKey];
+      state.preset = presetKey;
 
+      document.querySelectorAll(".preset-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.preset === presetKey);
+      });
+
+      document.getElementById("costPerPyeong").value = p.defaultCost;
+      document.getElementById("occupancyRate").value = p.defaultOccupancy;
+      renderAll();
+    }
+
+    function lookupSite() {
+      const query = document.getElementById("query").value || "행당중학교";
+      state.site = {
+        name: query + " 부지",
+        address: "서울특별시 예시 주소 000-0",
+        officialLandPrice: 18500000,
+        zoning: "제2종 일반주거지역",
+        coords: "37.5610, 127.0365"
+      };
+
+      document.getElementById("siteMeta").innerHTML = `
+        <strong>${state.site.name}</strong>
+        <div>${state.site.address}</div>
+        <div style="margin-top:8px;">공시지가: ${krw(state.site.officialLandPrice)} / 평</div>
+        <div>용도지역: ${state.site.zoning}</div>
+        <div>토지비 반영값: ${krw(state.site.officialLandPrice)} / 평</div>
+      `;
+
+      document.getElementById("mapSiteName").textContent = state.site.name;
+      document.getElementById("mapCoords").textContent = state.site.coords;
+      document.getElementById("mapPrice").textContent = krw(state.site.officialLandPrice) + " / 평";
+
+      renderAll();
+    }
+
+    function buildCashflowArray(inputs) {
+      const p = presets[state.preset];
       const constructionCost = inputs.gfa * inputs.costPerPyeong;
-      const landCost = inputs.landLaw ? 0 : constructionCost * 0.12;
+      const landCost = inputs.landLaw ? 0 : state.site.officialLandPrice * inputs.gfa;
       const totalCost = constructionCost * 1.20 + landCost;
 
       const revenueBase =
         inputs.seats *
         inputs.occupancy *
-        pricePerSeat *
-        eventsPerMonth *
+        p.basePricePerSeat *
+        p.monthlyOps *
         12;
+
+      const debtAnnual = totalCost * 0.048;
+
+      const cashflows = [];
+      for (let year = 1; year <= 40; year++) {
+        let value = 0;
+
+        if (year <= 3) {
+          value = -(constructionCost / 3) * (1 - (year - 1) * 0.08);
+        } else {
+          const opYear = year - 3;
+          const revenue = revenueBase * Math.pow(1.012, opYear - 1);
+          const opex = revenue * 0.29;
+          const maintenance = constructionCost * 0.015;
+          const debt = year <= 23 ? debtAnnual : 0;
+          value = revenue - opex - maintenance - debt;
+
+          if (year >= 31) value *= 1.20;
+        }
+
+        cashflows.push({ year, value });
+      }
+
+      return { cashflows, constructionCost, landCost, totalCost, revenueBase };
+    }
+
+    function buildMetrics(inputs, model) {
+      const p = presets[state.preset];
 
       const irr =
         0.061
@@ -1301,10 +1242,10 @@
         - (inputs.interestRate - 0.045) * 0.62
         - ((inputs.costPerPyeong - 12000000) / 12000000) * 0.028
         + (inputs.targetIRR - 0.07) * 0.36
-        + (state.usage === "performance" ? 0.006 : state.usage === "office" ? 0.003 : 0.002)
+        + (state.preset === "performance" ? 0.006 : state.preset === "office" ? 0.003 : 0.002)
         + (inputs.landLaw ? 0.004 : -0.003);
 
-      const dscr =
+      const avgDscr =
         1.19
         + (inputs.occupancy - 0.85) * 0.92
         - (inputs.interestRate - 0.045) * 3.2
@@ -1320,38 +1261,10 @@
         - (inputs.years - 30) * 0.35
       )));
 
-      const monthlyRent = totalCost * (inputs.targetIRR + 0.025) / 12 / 20;
-      const vfm = Math.max(6, Math.min(28, meta.vfm + (inputs.landLaw ? 3 : -2) + (inputs.occupancy - 0.85) * 18));
+      const monthlyRent = model.totalCost * (inputs.targetIRR + 0.025) / 12 / 20;
+      const vfm = Math.max(6, Math.min(28, p.vfmBase + (inputs.landLaw ? 3 : -2) + (inputs.occupancy - 0.85) * 18));
 
-      const rows = [];
-      for (let year = 1; year <= 40; year++) {
-        let cf;
-        if (year <= 3) {
-          cf = -(constructionCost / 3) * (1 - (year - 1) * 0.08);
-        } else {
-          const opYear = year - 3;
-          const revenue = revenueBase * Math.pow(1.012, opYear - 1);
-          const operating = revenue * 0.29;
-          const maintenance = constructionCost * 0.015;
-          const debt = year <= 23 ? totalCost * 0.05 : 0;
-          cf = revenue - operating - maintenance - debt;
-          if (year >= 31) cf *= 1.18;
-        }
-        rows.push({ year, cf });
-      }
-
-      return {
-        meta,
-        constructionCost,
-        landCost,
-        totalCost,
-        irr,
-        dscr,
-        bepYear,
-        monthlyRent,
-        vfm,
-        rows
-      };
+      return { irr, avgDscr, bepYear, monthlyRent, vfm };
     }
 
     function renderRanges(inputs) {
@@ -1360,45 +1273,53 @@
       document.getElementById("occupancyValue").textContent = Math.round(inputs.occupancy * 100) + "%";
     }
 
-    function renderScoreboard(model) {
-      document.getElementById("kpiIRR").textContent = pct(model.irr);
+    function renderKpis(model, metrics) {
+      document.getElementById("kpiIRR").textContent = pct(metrics.irr);
+
       const dscrEl = document.getElementById("kpiDSCR");
-      dscrEl.textContent = model.dscr.toFixed(2);
-      dscrEl.classList.toggle("blink", model.dscr < 1.2);
-      dscrEl.style.color = model.dscr < 1.2 ? "var(--red)" : "var(--green)";
-      document.getElementById("kpiBEP").textContent = model.bepYear + "Y";
+      dscrEl.textContent = metrics.avgDscr.toFixed(2);
+      dscrEl.classList.remove("ok", "warn");
+      dscrEl.classList.add(metrics.avgDscr < 1.2 ? "warn" : "ok");
+
+      document.getElementById("kpiBEP").textContent = metrics.bepYear + "Y";
       document.getElementById("kpiCost").textContent = krw(model.totalCost);
-      document.getElementById("kpiRent").textContent = krw(model.monthlyRent);
+      document.getElementById("kpiRent").textContent = krw(metrics.monthlyRent);
       document.getElementById("landCostLabel").textContent = krw(model.landCost);
 
-      const guide = document.getElementById("dscrGuide");
-      if (model.dscr < 1.2) {
-        guide.classList.add("warn");
-        guide.textContent = "DSCR이 1.2 미만입니다. 운영 기간을 40년으로 늘리거나 공사비를 낮추세요.";
+      const guardrail = document.getElementById("dscrGuardrail");
+      if (metrics.avgDscr < 1.2) {
+        guardrail.classList.add("warn");
+        guardrail.textContent = "운영 기간 연장 필요: Avg. DSCR이 1.20 미만입니다. 기간을 늘리거나 공사비를 낮추세요.";
       } else {
-        guide.classList.remove("warn");
-        guide.textContent = "현재 조건에서는 금융 안정성이 양호합니다. 민감도 테이블로 리스크를 추가 점검하세요.";
+        guardrail.classList.remove("warn");
+        guardrail.textContent = "금융 안정성 양호: 현재 조건에서 DSCR 기준을 충족하고 있습니다.";
       }
 
-      document.getElementById("vfmValue").textContent = Math.round(model.vfm) + "%";
-      document.getElementById("vfmFill").style.width = Math.round(model.vfm) + "%";
+      document.getElementById("vfmValue").textContent = Math.round(metrics.vfm) + "%";
+      document.getElementById("vfmFill").style.width = Math.round(metrics.vfm) + "%";
     }
 
-    function renderSensitivity(model, inputs) {
-      const baseRate = inputs.interestRate;
-      const rates = [baseRate - 0.01, baseRate, baseRate + 0.01];
-      const labels = ["양호", "기준", "주의"];
+    function renderSensitivity(inputs, metrics) {
+      const rates = [
+        inputs.interestRate - 0.01,
+        inputs.interestRate,
+        inputs.interestRate + 0.01
+      ];
+
       const tbody = document.getElementById("sensitivityBody");
       const printTbody = document.getElementById("printSensitivityBody");
 
       let html = "";
-      rates.forEach((r, i) => {
-        const irrVal = model.irr - (r - baseRate) * 0.78;
+      rates.forEach((rate, idx) => {
+        const irr = metrics.irr - (rate - inputs.interestRate) * 0.78;
+        const cls = irr >= 0.075 ? "heat-high" : irr >= 0.068 ? "heat-mid" : "heat-low";
+        const label = irr >= 0.075 ? "양호" : irr >= 0.068 ? "기준" : "주의";
+
         html += `
           <tr>
-            <td>${(r * 100).toFixed(1)}%</td>
-            <td>${pct(irrVal)}</td>
-            <td>${labels[i]}</td>
+            <td>${(rate * 100).toFixed(1)}%</td>
+            <td class="${cls}">${pct(irr)}</td>
+            <td>${label}</td>
           </tr>
         `;
       });
@@ -1407,146 +1328,177 @@
       printTbody.innerHTML = html;
     }
 
-    function renderChart(model) {
-      const svg = document.getElementById("cashflowChart");
-      const width = 1000;
-      const height = 420;
-      const paddingX = 32;
-      const paddingTop = 30;
-      const paddingBottom = 36;
+    function renderCashflowChart(model) {
+      const categories = model.cashflows.map(d => `${d.year}Y`);
+      const series = model.cashflows.map(d => Math.round(d.value / 1000000));
 
-      const values = model.rows.map(r => r.cf);
-      const maxVal = Math.max(...values);
-      const minVal = Math.min(...values);
-      const range = maxVal - minVal || 1;
-      const zeroY = paddingTop + ((maxVal - 0) / range) * (height - paddingTop - paddingBottom);
+      const options = {
+        chart: {
+          type: "area",
+          height: 430,
+          toolbar: { show: false },
+          background: "transparent",
+          animations: { enabled: true, easing: "easeinout", speed: 450 }
+        },
+        series: [{
+          name: "Cash Flow (백만원)",
+          data: series
+        }],
+        xaxis: {
+          categories,
+          labels: {
+            style: { colors: "#9ba7b5" }
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: {
+            style: { colors: "#9ba7b5" },
+            formatter: (v) => `${Math.round(v).toLocaleString("ko-KR")}`
+          }
+        },
+        dataLabels: { enabled: false },
+        stroke: {
+          curve: "smooth",
+          width: 3,
+          colors: ["#28A745"]
+        },
+        fill: {
+          type: "gradient",
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.42,
+            opacityTo: 0.06,
+            stops: [0, 90, 100]
+          },
+          colors: ["#28A745"]
+        },
+        grid: {
+          borderColor: "rgba(255,255,255,0.08)"
+        },
+        tooltip: {
+          theme: "dark",
+          y: {
+            formatter: (v) => `${v.toLocaleString("ko-KR")} 백만원`
+          }
+        },
+        annotations: {
+          xaxis: [
+            {
+              x: "31Y",
+              x2: "40Y",
+              fillColor: "rgba(212,175,55,0.14)",
+              borderColor: "#D4AF37",
+              opacity: 0.4,
+              label: {
+                text: "수익 극대화기",
+                style: {
+                  background: "#D4AF37",
+                  color: "#101720"
+                }
+              }
+            }
+          ]
+        },
+        theme: { mode: "dark" },
+        colors: ["#28A745"]
+      };
 
-      const x = (i) => paddingX + (i / 39) * (width - paddingX * 2);
-      const y = (v) => paddingTop + ((maxVal - v) / range) * (height - paddingTop - paddingBottom);
-
-      const areaPoints = model.rows.map((r, i) => `${x(i)},${y(r.cf)}`).join(" ");
-      const basePathStart = `${x(0)},${zeroY}`;
-      const areaPath = `
-        M ${basePathStart}
-        L ${model.rows.map((r, i) => `${x(i)} ${y(r.cf)}`).join(" L ")}
-        L ${x(39)} ${zeroY}
-        Z
-      `;
-
-      const linePath = model.rows.map((r, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(r.cf)}`).join(" ");
-
-      let axisLines = "";
-      for (let i = 0; i < 6; i++) {
-        const yy = paddingTop + i * ((height - paddingTop - paddingBottom) / 5);
-        axisLines += `<line x1="${paddingX}" y1="${yy}" x2="${width - paddingX}" y2="${yy}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />`;
+      if (!chart) {
+        chart = new ApexCharts(document.querySelector("#cashflowChart"), options);
+        chart.render();
+      } else {
+        chart.updateOptions(options);
       }
-
-      const goldX = x(30);
-
-      svg.innerHTML = `
-        <defs>
-          <linearGradient id="cfPositive" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="rgba(40,167,69,0.42)" />
-            <stop offset="100%" stop-color="rgba(40,167,69,0.05)" />
-          </linearGradient>
-          <linearGradient id="cfNegative" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="rgba(220,53,69,0.10)" />
-            <stop offset="100%" stop-color="rgba(220,53,69,0.38)" />
-          </linearGradient>
-          <linearGradient id="goldZone" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="rgba(212,175,55,0.00)" />
-            <stop offset="30%" stop-color="rgba(212,175,55,0.12)" />
-            <stop offset="100%" stop-color="rgba(212,175,55,0.22)" />
-          </linearGradient>
-        </defs>
-
-        ${axisLines}
-
-        <rect x="${goldX}" y="${paddingTop}" width="${width - goldX - paddingX}" height="${height - paddingTop - paddingBottom}" fill="url(#goldZone)"></rect>
-        <line x1="${paddingX}" y1="${zeroY}" x2="${width - paddingX}" y2="${zeroY}" stroke="rgba(255,255,255,0.15)" stroke-width="1.4" />
-
-        <path d="${areaPath}" fill="url(#cfPositive)" opacity="0.95"></path>
-        <path d="${linePath}" fill="none" stroke="#28a745" stroke-width="4"></path>
-
-        <path d="M ${x(0)} ${y(model.rows[0].cf)} L ${x(1)} ${y(model.rows[1].cf)} L ${x(2)} ${y(model.rows[2].cf)}"
-              fill="none" stroke="#dc3545" stroke-width="4"></path>
-
-        <line x1="${goldX}" y1="${paddingTop}" x2="${goldX}" y2="${height - paddingBottom}" stroke="#d4af37" stroke-width="2" stroke-dasharray="6 6" />
-        <text x="${goldX + 10}" y="${paddingTop + 18}" fill="#d4af37" font-size="12" font-weight="700">수익 폭발 구간</text>
-
-        ${model.rows.filter((_, i) => i % 5 === 0).map((r, i) => {
-          const idx = i * 5;
-          return `
-            <text x="${x(idx)}" y="${height - 10}" fill="rgba(255,255,255,0.52)" font-size="11" text-anchor="middle">${idx + 1}</text>
-          `;
-        }).join("")}
-      `;
     }
 
-    function renderPrint(model, inputs) {
-      document.getElementById("printSiteName").textContent =
-        (document.getElementById("query").value || "행당중학교") + " 부지";
+    function renderPrint(inputs, model, metrics) {
+      document.getElementById("printSiteName").textContent = state.site.name;
       document.getElementById("printYears").textContent = inputs.years + "년";
-      document.getElementById("printUsage").textContent = model.meta.label;
+      document.getElementById("printPreset").textContent = presets[state.preset].label;
       document.getElementById("printTargetIRR").textContent = pct(inputs.targetIRR);
       document.getElementById("printRate").textContent = pct(inputs.interestRate);
       document.getElementById("printLandLaw").textContent = inputs.landLaw ? "적용" : "미적용";
-      document.getElementById("printIRR").textContent = pct(model.irr);
-      document.getElementById("printDSCR").textContent = model.dscr.toFixed(2);
+      document.getElementById("printIRR").textContent = pct(metrics.irr);
+      document.getElementById("printDSCR").textContent = metrics.avgDscr.toFixed(2);
       document.getElementById("printCost").textContent = krw(model.totalCost);
-      document.getElementById("printRent").textContent = krw(model.monthlyRent);
+      document.getElementById("printRent").textContent = krw(metrics.monthlyRent);
 
       document.getElementById("printNote").textContent =
-        model.dscr < 1.2
-          ? "DSCR이 1.2 미만입니다. 운영기간을 40년으로 연장하거나 공사비 및 금융 조건 조정이 필요합니다."
-          : "현재 구조는 금융 안정성 기준을 대체로 충족하며, 민감도 관리 시 협상 가능성이 양호합니다.";
+        metrics.avgDscr < 1.2
+          ? "DSCR이 1.20 미만으로 운영기간 연장 또는 공사비 조정 검토가 필요합니다."
+          : "현재 시나리오는 DSCR 기준을 충족하며 협상용 재무 구조로 해석 가능합니다.";
 
-      document.getElementById("printDate").textContent =
-        "출력일: " + new Date().toLocaleDateString("ko-KR");
+      document.getElementById("printDate").textContent = "출력일: " + new Date().toLocaleDateString("ko-KR");
     }
 
     function renderAll() {
       const inputs = getInputs();
-      const model = buildModel(inputs);
+      const model = buildCashflowArray(inputs);
+      const metrics = buildMetrics(inputs, model);
+
       renderRanges(inputs);
-      renderScoreboard(model);
-      renderSensitivity(model, inputs);
-      renderChart(model);
-      renderPrint(model, inputs);
+      renderKpis(model, metrics);
+      renderSensitivity(inputs, metrics);
+      renderCashflowChart(model);
+      renderPrint(inputs, model, metrics);
     }
 
     function saveScenario() {
-      const inputs = getInputs();
-      const payload = { ...inputs, usage: state.usage, query: document.getElementById("query").value };
-      localStorage.setItem("inrealty-trust-precision-simulator", JSON.stringify(payload));
-      alert("시나리오가 임시 저장되었습니다.");
+      const payload = {
+        query: document.getElementById("query").value,
+        preset: state.preset,
+        years: document.getElementById("operationYears").value,
+        costPerPyeong: document.getElementById("costPerPyeong").value,
+        occupancy: document.getElementById("occupancyRate").value,
+        targetIRR: document.getElementById("targetIRR").value,
+        interestRate: document.getElementById("interestRate").value,
+        seats: document.getElementById("seatCount").value,
+        landLaw: document.getElementById("landLawToggle").checked
+      };
+      localStorage.setItem("inrealtylab-pf-simulator", JSON.stringify(payload));
+      alert("시나리오가 저장되었습니다.");
     }
 
     function loadScenario() {
-      const raw = localStorage.getItem("inrealty-trust-precision-simulator");
+      const raw = localStorage.getItem("inrealtylab-pf-simulator");
       if (!raw) return;
       try {
-        const saved = JSON.parse(raw);
-        if (saved.query) document.getElementById("query").value = saved.query;
-        if (saved.years) document.getElementById("operationYears").value = saved.years;
-        if (saved.costPerPyeong) document.getElementById("costPerPyeong").value = saved.costPerPyeong;
-        if (saved.occupancy) document.getElementById("occupancyRate").value = saved.occupancy;
-        if (saved.targetIRR) document.getElementById("targetIRR").value = saved.targetIRR;
-        if (saved.interestRate) document.getElementById("interestRate").value = saved.interestRate;
-        if (saved.seats) document.getElementById("seatCount").value = saved.seats;
-        if (typeof saved.landLaw === "boolean") document.getElementById("landLawToggle").checked = saved.landLaw;
-        if (saved.usage && usageMeta[saved.usage]) {
-          state.usage = saved.usage;
-          document.querySelectorAll(".usage-tab").forEach((b) => {
-            b.classList.toggle("active", b.dataset.usage === saved.usage);
-          });
-        }
+        const s = JSON.parse(raw);
+        if (s.query) document.getElementById("query").value = s.query;
+        if (s.years) document.getElementById("operationYears").value = s.years;
+        if (s.costPerPyeong) document.getElementById("costPerPyeong").value = s.costPerPyeong;
+        if (s.occupancy) document.getElementById("occupancyRate").value = s.occupancy;
+        if (s.targetIRR) document.getElementById("targetIRR").value = s.targetIRR;
+        if (s.interestRate) document.getElementById("interestRate").value = s.interestRate;
+        if (s.seats) document.getElementById("seatCount").value = s.seats;
+        if (typeof s.landLaw === "boolean") document.getElementById("landLawToggle").checked = s.landLaw;
+        if (s.preset && presets[s.preset]) state.preset = s.preset;
+
+        document.querySelectorAll(".preset-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.preset === state.preset);
+        });
       } catch (e) {}
     }
 
-    bindInputs();
+    function bindEvents() {
+      document.getElementById("operationYears").addEventListener("input", renderAll);
+      document.getElementById("costPerPyeong").addEventListener("input", renderAll);
+      document.getElementById("occupancyRate").addEventListener("input", renderAll);
+      document.getElementById("targetIRR").addEventListener("change", renderAll);
+      document.getElementById("interestRate").addEventListener("input", renderAll);
+      document.getElementById("seatCount").addEventListener("input", renderAll);
+      document.getElementById("landLawToggle").addEventListener("change", renderAll);
+
+      document.querySelectorAll(".preset-btn").forEach((btn) => {
+        btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
+      });
+    }
+
+    bindEvents();
     loadScenario();
-    renderAll();
+    applyPreset(state.preset);
   </script>
 </body>
 </html>

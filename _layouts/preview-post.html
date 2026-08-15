@@ -10,7 +10,7 @@
   </style>
 </head>
 <body>
-<header class="top"><div class="wrap topin"><a class="logo" href="{{ '/preview/' | relative_url }}">INREALTY</a>{% if page.category == 'track-record' %}<a class="back" href="{{ '/preview/track-record/' | relative_url }}">← Track Record</a>{% else %}<a class="back" href="{{ '/preview/insights/' | relative_url }}">← Insights</a>{% endif %}</div></header>
-<main><div class="wrap"><article class="article"><span class="tag">{{ page.label | default: page.category }}</span><h1>{{ page.title }}</h1><div class="meta">{% if page.project_year %}{{ page.project_year }} · {% endif %}{{ page.date | date: '%Y.%m.%d' }}</div>{{ content }}<div class="foot"><a href="{{ '/preview/' | relative_url }}">INRealty 홈페이지로 돌아가기 →</a></div></article></div></main>
+<header class="top"><div class="wrap topin"><a class="logo" href="{{ '/' | relative_url }}">INREALTY</a>{% if page.category == 'track-record' %}<a class="back" href="{{ '/track-record/' | relative_url }}">← Track Record</a>{% else %}<a class="back" href="{{ '/insights/' | relative_url }}">← Insights</a>{% endif %}</div></header>
+<main><div class="wrap"><article class="article"><span class="tag">{{ page.label | default: page.category }}</span><h1>{{ page.title }}</h1><div class="meta">{% if page.project_year %}{{ page.project_year }} · {% endif %}{{ page.date | date: '%Y.%m.%d' }}</div>{{ content }}<div class="foot"><a href="{{ '/' | relative_url }}">INRealty 홈페이지로 돌아가기 →</a></div></article></div></main>
 </body>
 </html>
